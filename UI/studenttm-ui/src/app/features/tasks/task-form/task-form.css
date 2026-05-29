@@ -1,0 +1,156 @@
+/* ── Page background ── */
+:host {
+  display: block;
+  background: #f0f4ff;
+  min-height: 100vh;
+  padding: 40px 20px;
+}
+
+/* ── Form card ── */
+.task-form-container {
+  max-width: 580px;
+  margin: 0 auto;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 0.5px solid rgba(99, 102, 241, 0.15);
+  padding: 36px 40px;
+}
+
+/* ── Heading ── */
+.task-form-container h2 {
+  font-size: 22px;
+  font-weight: 500;
+  color: #1e1b4b;
+  margin: 0 0 6px;
+}
+
+.task-form-container .form-subtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 28px;
+}
+
+/* ── Form groups ── */
+.form-group {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 7px;
+}
+
+.required {
+  color: #ef4444;
+  margin-left: 2px;
+}
+
+/* ── Inputs ── */
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 15px;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 8px;
+  color: #1e1b4b;
+  background: #fafbff;
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+  font-family: inherit;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #6366f1;
+  background: #ffffff;
+}
+
+input.is-invalid {
+  border-color: #ef4444;
+  background: #fff8f8;
+}
+
+textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* ── Hint text ── */
+.form-text {
+  display: block;
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 5px;
+}
+
+/* ── Priority + Status side by side ── */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* ── Error message ── */
+.error-message {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 0.5px solid #fca5a5;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+/* ── Actions ── */
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 0.5px solid rgba(99, 102, 241, 0.12);
+}
+
+.btn-submit {
+  flex: 1;
+  background: #6366f1;
+  color: #ffffff;
+  border: none;
+  padding: 11px 28px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background: #4f46e5;
+}
+
+.btn-submit:disabled {
+  background: #c7d2fe;
+  cursor: not-allowed;
+}
+
+.btn-cancel {
+  background: transparent;
+  color: #6b7280;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  padding: 11px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-cancel:hover {
+  background: #f0f4ff;
+  color: #4f46e5;
+  border-color: #6366f1;
+}

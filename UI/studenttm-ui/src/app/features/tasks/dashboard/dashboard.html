@@ -1,0 +1,276 @@
+<div class="dashboard-container">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <div class="logo-section">
+      <h2>StudentTM</h2>
+    </div>
+
+    <nav class="sidebar-menu">
+
+      <a class="menu-item active">
+        Dashboard
+      </a>
+
+      <a
+        class="menu-item"
+        routerLink="/tasks/create">
+
+        Create Task
+      </a>
+
+      <a class="menu-item" routerLink="/calendar">Calendar</a>
+     
+
+      <a
+        class="menu-item logout"
+        (click)="logout()">
+
+        Logout
+      </a>
+
+    </nav>
+
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- HEADER -->
+    <div class="dashboard-header">
+
+      <div>
+    <h1>Welcome Back, {{ user.name }} 👋</h1>
+    <p>Manage your daily tasks efficiently</p>
+  </div>
+
+      <div class="user-badge">
+    {{ user.name.charAt(0).toUpperCase() }}
+  </div>
+
+    </div>
+
+    <!-- CONTENT COMING NEXT -->
+    <div class="dashboard-body">
+
+  <!-- SUMMARY CARDS -->
+
+  <div class="summary-grid">
+
+    <div class="summary-card total">
+      <h3>Total Tasks</h3>
+      <p>{{ tasks.length }}</p>
+    </div>
+
+    <div class="summary-card pending">
+      <h3>Pending</h3>
+      <p>
+        {{
+          filteredTasks.filter(
+            t => t.status === 0
+          ).length
+        }}
+      </p>
+    </div>
+
+    <div class="summary-card in-progress-card">
+      <h3>In Progress</h3>
+      <p>
+        {{
+          filteredTasks.filter(
+            t => t.status === 1
+          ).length
+        }}
+      </p>
+    </div>
+
+    <div class="summary-card completed">
+      <h3>Completed</h3>
+      <p>
+        {{
+          filteredTasks.filter(
+            t => t.status === 2
+          ).length
+        }}
+      </p>
+    </div>
+
+  </div>
+  <!-- TASK SECTION -->
+
+<div class="tasks-section">
+
+<div class="section-header">
+
+  <!-- Row 1: title + create button -->
+  <div class="section-header-top">
+    <h2>My Tasks</h2>
+    <button class="create-task-btn" (click)="navigateToCreateTask()">
+      + Create Task
+    </button>
+  </div>
+
+  <!-- Row 2: search -->
+  <input
+    class="search-input"
+    type="text"
+    [(ngModel)]="searchTerm"
+    placeholder="Search by title or description..."
+  />
+
+  <!-- Row 3: filter buttons -->
+  <div class="filter-buttons">
+    <button (click)="showAllTasks()">All</button>
+    <button (click)="loadPendingTasks()">Pending</button>
+    <button (click)="loadInProgressTasks()">In Progress</button>
+    <button (click)="loadCompletedTasks()">Completed</button>
+    <button (click)="loadTasksByPriority()">Sort By Priority</button>
+  </div>
+
+  <!-- Row 4: category filter -->
+   <div class="category-filters">
+  <span
+    class="cat-chip"
+    [class.active]="selectedCategory === 'all'"
+    (click)="filterByCategory('all')">
+    All
+  </span>
+  <span
+    *ngFor="let cat of categoryOptions"
+    class="cat-chip"
+    [class.active]="selectedCategory === cat"
+    (click)="filterByCategory(cat)">
+    {{ cat }}
+  </span>
+</div>
+
+</div>
+
+  <!-- EMPTY STATE -->
+
+  <div
+    *ngIf="filteredTasks.length === 0"
+    class="empty-state">
+
+    No tasks available.
+  </div>
+
+  <!-- TASK GRID -->
+
+  <div
+    *ngIf="filteredTasks.length > 0"
+    class="task-grid">
+
+    <div
+      *ngFor="let task of filteredTasks"
+      class="task-card" [ngClass]="{ 'overdue-task': task.status !== 2 && isOverdue(task.dueDate) }">  <!-- TOP -->
+
+      <div class="task-top">
+
+  <h3>{{ task.title }}</h3>
+
+  <div class="task-actions">
+
+    <span
+      class="priority-badge"
+      [ngClass]="{
+        'high': task.priority === 2,
+        'medium': task.priority === 1,
+        'low': task.priority === 0
+      }">
+
+      {{
+        task.priority === 2
+          ? 'High'
+          : task.priority === 1
+          ? 'Medium'
+          : 'Low'
+      }}
+    </span>
+
+    <button
+      class="edit-btn"
+      (click)="editTask(task.id)">
+
+      ✏️
+    </button>
+
+    <button
+      class="delete-btn"
+      (click)="deleteTask(task.id)">
+
+      ➖
+    </button>
+
+  </div>
+
+</div>
+           
+
+      <!-- DESCRIPTION -->
+
+      <p class="task-description">
+        {{ task.description || 'No description available' }}
+      </p>
+
+      <!-- STATUS -->
+
+      <div class="status-row">
+      <div *ngIf="task.status !== 2 && isOverdue(task.dueDate)" class="overdue-label">
+  ⚠ Overdue
+</div>
+
+        <span
+          class="status-badge"
+          [ngClass]="{
+            'pending-status': task.status === 0,
+            'progress-status': task.status === 1,
+            'completed-status': task.status === 2
+          }">
+
+          {{
+            task.status === 0
+              ? 'Pending'
+              : task.status === 1
+              ? 'In Progress'
+              : 'Completed'
+          }}
+        </span>
+
+      </div>
+
+      <!-- FOOTER -->
+
+      <div class="task-footer">
+
+        <small>
+          Due:
+          {{
+            task.dueDate
+              ? (task.dueDate | date:'mediumDate')
+              : 'No due date'
+          }}
+        </small>
+
+        <span
+  *ngIf="task.category"
+  class="cat-tag"
+  [ngClass]="getCategoryClass(task.category)">
+  {{ task.category }}
+</span>
+
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+</div>
+
+  </main>
+
+</div>

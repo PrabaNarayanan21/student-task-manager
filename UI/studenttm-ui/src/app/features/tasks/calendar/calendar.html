@@ -1,0 +1,79 @@
+<div class="dashboard-container">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo-section">
+      <h2>StudentTM</h2>
+    </div>
+    <nav class="sidebar-menu">
+      <a class="menu-item" routerLink="/dashboard">Dashboard</a>
+      <a class="menu-item" routerLink="/tasks/create">Create Task</a>
+      <a class="menu-item active" routerLink="/calendar">Calendar</a>
+      <a class="menu-item logout" (click)="logout()">Logout</a>
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+
+    <div class="cal-page-header">
+      <h1>Calendar</h1>
+      <p>View your tasks by due date</p>
+    </div>
+
+    <div class="cal-layout">
+
+      <!-- CALENDAR -->
+      <div class="cal-wrapper">
+        <full-calendar [options]="calendarOptions"></full-calendar>
+      </div>
+
+      <!-- TASK LIST FOR SELECTED DATE -->
+      <div class="task-list-panel">
+
+        <div *ngIf="!selectedDate" class="no-date-selected">
+          <p>Click a date or task to see details</p>
+        </div>
+
+        <div *ngIf="selectedDate">
+          <h3>Tasks for {{ selectedDate | date:'mediumDate' }}</h3>
+
+          <div *ngIf="selectedDateTasks.length === 0" class="no-tasks">
+            No tasks due on this date.
+          </div>
+
+          <div
+            *ngFor="let task of selectedDateTasks"
+            class="task-item">
+
+            <div class="task-item-top">
+              <span class="task-item-title">{{ task.title }}</span>
+              <span
+                class="status-badge"
+                [ngClass]="getStatusClass(task.status)">
+                {{ getStatusText(task.status) }}
+              </span>
+            </div>
+
+            <p *ngIf="task.description" class="task-item-desc">
+              {{ task.description }}
+            </p>
+
+            <div class="task-item-footer">
+              <span *ngIf="task.category" class="cat-tag">
+                {{ task.category }}
+              </span>
+              <span class="due-time">
+                {{ task.dueDate | date:'shortTime' }}
+              </span>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+</div>

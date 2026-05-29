@@ -1,0 +1,49 @@
+
+# ASP.NET Core
+
+
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider / VS Code
+.idea/
+.vscode/
+
+# Logs
+*.log
+
+# NuGet
+*.nupkg
+packages/
+
+# Environment files
+appsettings.Development.json
+
+
+# Angular
+
+
+node_modules/
+dist/
+.angular/
+coverage/
+
+# Angular cache
+.cache/
+
+# npm logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+
+# OS Files
+
+
+.DS_Store
+Thumbs.db

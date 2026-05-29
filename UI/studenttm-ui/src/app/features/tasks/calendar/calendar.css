@@ -1,0 +1,220 @@
+.cal-page-header {
+  margin-bottom: 24px;
+}
+
+.cal-page-header h1 {
+  font-size: 28px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.cal-page-header p {
+  color: #6b7280;
+  margin-top: 5px;
+}
+
+.cal-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 24px;
+  align-items: start;
+}
+
+.cal-wrapper {
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+}
+
+.task-list-panel {
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+  min-height: 300px;
+}
+
+.task-list-panel h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 16px;
+}
+
+.no-date-selected p,
+.no-tasks {
+  color: #9ca3af;
+  font-size: 14px;
+  text-align: center;
+  margin-top: 40px;
+}
+
+.task-item {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 12px;
+  border-left: 4px solid #6c63ff;
+}
+
+.task-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.task-item-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.task-item-desc {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 10px;
+}
+
+.task-item-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.due-time {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.cat-tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: #ede9fe;
+  color: #4c1d95;
+  font-weight: 500;
+}
+
+.status-badge {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.pending-status { background: #fef3c7; color: #92400e; }
+.progress-status { background: #dbeafe; color: #1e40af; }
+.completed-status { background: #d1fae5; color: #065f46; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #f5f7fb;
+  font-family: Arial, sans-serif;
+}
+
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f5f7fb;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: white;
+  padding: 30px 20px;
+  border-right: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+.logo-section h2 {
+  color: #6c63ff;
+  margin-bottom: 50px;
+}
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.menu-item {
+  padding: 14px 18px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: #374151;
+  cursor: pointer;
+  transition: 0.3s;
+  font-weight: 500;
+}
+
+.menu-item:hover {
+  background-color: #f3f4f6;
+}
+
+.active {
+  background-color: #6c63ff;
+  color: white;
+}
+
+.logout {
+  margin-top: 30px;
+  color: #dc3545;
+}
+
+.main-content {
+  flex: 1;
+  padding: 30px;
+}
+
+:host ::ng-deep .fc {
+  font-family: Arial, sans-serif;
+}
+
+:host ::ng-deep .fc-toolbar-title {
+  font-size: 20px !important;
+  font-weight: 600;
+  color: #111827;
+}
+
+:host ::ng-deep .fc-button-primary {
+  background-color: #6c63ff !important;
+  border-color: #6c63ff !important;
+  border-radius: 8px !important;
+}
+
+:host ::ng-deep .fc-button-primary:hover {
+  background-color: #4f46e5 !important;
+}
+
+:host ::ng-deep .fc-day-today {
+  background-color: #eef2ff !important;
+}
+
+:host ::ng-deep .fc-daygrid-day-number {
+  color: #374151;
+  font-weight: 500;
+}
+
+:host ::ng-deep .fc-col-header-cell-cushion {
+  color: #6c63ff;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+:host ::ng-deep .fc-event {
+  border-radius: 6px !important;
+  padding: 2px 6px !important;
+  font-size: 12px !important;
+  cursor: pointer;
+}
+
+:host ::ng-deep .fc-daygrid-day:hover {
+  background-color: #f9fafb;
+  cursor: pointer;
+}
