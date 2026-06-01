@@ -33,3 +33,4 @@ namespace StudentTM.API.Models.Domain
         public User User { get; set; }
     }
 }
+

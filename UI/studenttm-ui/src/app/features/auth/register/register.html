@@ -1,25 +1,16 @@
 <div class="container mt-5">
-
   <div class="row justify-content-center">
-
     <div class="col-md-4">
-
       <div class="card shadow p-4">
 
-        <h2 class="text-center mb-4">
-          Register
-        </h2>
+        <h2 class="text-center mb-1">Create Account</h2>
+        <p class="text-center text-muted mb-4">Join StudentTM today</p>
 
         <form (ngSubmit)="onRegister()">
 
           <!-- Username -->
-
           <div class="mb-3">
-
-            <label class="form-label">
-              Username
-            </label>
-
+            <label class="form-label">Username</label>
             <input
               type="text"
               class="form-control"
@@ -27,17 +18,11 @@
               name="username"
               required
             />
-
           </div>
 
           <!-- Email -->
-
           <div class="mb-3">
-
-            <label class="form-label">
-              Email
-            </label>
-
+            <label class="form-label">Email</label>
             <input
               type="email"
               class="form-control"
@@ -45,17 +30,11 @@
               name="email"
               required
             />
-
           </div>
 
           <!-- Password -->
-
           <div class="mb-3">
-
-            <label class="form-label">
-              Password
-            </label>
-
+            <label class="form-label">Password</label>
             <input
               type="password"
               class="form-control"
@@ -63,25 +42,24 @@
               name="password"
               required
             />
-
           </div>
 
           <!-- Button -->
-
-          <button
-            type="submit"
-            class="btn btn-success w-100">
-
+          <button type="submit" class="btn btn-primary w-100">
             Register
-
           </button>
 
         </form>
 
+        <!-- Sign in link -->
+        <p class="text-center mt-3 mb-0">
+          Already have an account?
+          <a routerLink="/login" class="text-primary fw-semibold">
+            Sign in
+          </a>
+        </p>
+
       </div>
-
     </div>
-
   </div>
-
 </div>

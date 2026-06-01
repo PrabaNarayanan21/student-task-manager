@@ -84,7 +84,7 @@ builder.Services.AddSwaggerGen(options =>
 var app = builder.Build();
 
 // Middleware pipeline (order matters)
-app.UseCors("AllowAngular");                    // 1. CORS first — handles preflight OPTIONS
+app.UseCors("AllowAngular");                    // 1. CORS ,It checks whether angular is allowed?
 
 if (app.Environment.IsDevelopment())
 {
