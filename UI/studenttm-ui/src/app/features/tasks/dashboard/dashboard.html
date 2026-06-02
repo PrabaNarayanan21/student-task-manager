@@ -10,24 +10,24 @@
     <nav class="sidebar-menu">
 
       <a class="menu-item active">
-        Dashboard
+        🏠 Dashboard
       </a>
 
       <a
         class="menu-item"
         routerLink="/tasks/create">
 
-        Create Task
+       ➕ Create Task
       </a>
 
-      <a class="menu-item" routerLink="/calendar">Calendar</a>
+      <a class="menu-item" routerLink="/calendar">📅 Calendar</a>
      
 
       <a
         class="menu-item logout"
         (click)="logout()">
 
-        Logout
+      【⏻】Logout
       </a>
 
     </nav>
@@ -66,37 +66,73 @@
     <div class="summary-card pending">
       <h3>Pending</h3>
       <p>
-        {{
-          filteredTasks.filter(
-            t => t.status === 0
-          ).length
-        }}
+        {{ getPendingCount() }}
       </p>
     </div>
 
     <div class="summary-card in-progress-card">
       <h3>In Progress</h3>
       <p>
-        {{
-          filteredTasks.filter(
-            t => t.status === 1
-          ).length
-        }}
+        {{ getInProgressCount() }}
       </p>
     </div>
 
     <div class="summary-card completed">
       <h3>Completed</h3>
       <p>
-        {{
-          filteredTasks.filter(
-            t => t.status === 2
-          ).length
-        }}
+        {{ getCompletedCount() }}
       </p>
     </div>
 
+    
+
   </div>
+  <div class="productivity-card">
+
+  <h2>📊 Productivity Overview</h2>
+
+  <div class="productivity-stats">
+
+    <div class="productivity-box">
+      <h3>Today's Tasks</h3>
+      <p>{{ todayTotalTasks }}</p>
+    </div>
+
+    <div class="productivity-box">
+      <h3>Completed</h3>
+      <p>{{ todayCompletedTasks }}</p>
+    </div>
+
+    <div class="productivity-box">
+      <h3>Completion Rate</h3>
+      <p>{{ todayCompletionRate }}%</p>
+    </div>
+
+  </div>
+
+  <hr style="margin:20px 0">
+
+  <div
+    class="productivity-change"
+    [ngClass]="{
+      'positive': productivityDifference >= 0,
+      'negative': productivityDifference < 0
+    }">
+
+    {{
+      productivityDifference >= 0
+      ? '📈 Improved by '
+      : '📉 Decreased by '
+    }}
+
+    {{ absoluteDifference }}%
+
+    compared to yesterday
+  </div>
+
+</div>
+  
+  
   <!-- TASK SECTION -->
 
 <div class="tasks-section">
@@ -122,6 +158,7 @@
   <!-- Row 3: filter buttons -->
   <div class="filter-buttons">
     <button (click)="showAllTasks()">All</button>
+    <button (click)="showTodayTasks()">Today</button>
     <button (click)="loadPendingTasks()">Pending</button>
     <button (click)="loadInProgressTasks()">In Progress</button>
     <button (click)="loadCompletedTasks()">Completed</button>

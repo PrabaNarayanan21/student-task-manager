@@ -257,8 +257,9 @@ body {
   transition: 0.3s;
 }
 
-.task-card:hover {
-  transform: translateY(-5px);
+.task-card:hover{
+  transform:translateY(-6px);
+  box-shadow:0 10px 25px rgba(0,0,0,.1);
 }
 
 /* TASK TOP */
@@ -494,15 +495,18 @@ body {
   font-weight: 600;
 }
 
-.search-input {
-  padding: 10px 16px;
-  border: 1.5px solid #e5e7eb;
-  border-radius: 10px;
-  font-size: 14px;
-  width: 100%;
-  max-width: 360px;
-  outline: none;
-  transition: 0.2s;
+.search-input{
+  width:100%;
+  max-width:400px;
+
+  padding:12px 16px;
+
+  border-radius:12px;
+  border:1px solid #d1d5db;
+
+  font-size:14px;
+
+  margin-bottom:20px;
 }
 
 .search-input:focus {
@@ -548,3 +552,43 @@ body {
 .cat-personal   { background: #d1fae5; color: #065f46; }
 .cat-project    { background: #dbeafe; color: #1e40af; }
 .cat-other      { background: #f1f5f9; color: #475569; }
+
+.productivity-card {
+  margin-top: 25px;
+
+    background: linear-gradient(to right, #acb6e5, #74ebd5);
+  border-radius: 20px;
+
+  padding: 25px;
+
+  box-shadow:
+    0 4px 14px rgba(0,0,0,.06);
+}
+
+.productivity-card h2 {
+  margin-bottom: 20px;
+  color: #111827;
+}
+
+.productivity-stats {
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.productivity-box {
+  flex: 1;
+  min-width: 150px;
+}
+
+.productivity-box h3 {
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.productivity-box p {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+}

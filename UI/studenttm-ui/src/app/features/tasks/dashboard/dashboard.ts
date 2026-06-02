@@ -28,10 +28,29 @@ user = {
   name: localStorage.getItem('username') || 'User'
 };
   tasks: Task[] = [];
-
+  allTasks: Task[] = [];
   isLoading = true;
   today: Date = new Date();
+  searchTerm: string = '';
+  selectedCategory: string = 'all';
 
+  categoryOptions = [
+    'Assignment',
+    'Exam',
+    'Personal',
+    'Project',
+    'Other'
+  ];
+  todayTotalTasks = 0;
+  todayCompletedTasks = 0;
+  todayCompletionRate = 0;
+
+  yesterdayTotalTasks = 0;
+  yesterdayCompletedTasks = 0;
+  yesterdayCompletionRate = 0;
+
+  productivityDifference = 0;
+  absoluteDifference = 0;
   constructor(
     private taskService: TaskService,
     private cdr: ChangeDetectorRef,
@@ -53,6 +72,9 @@ user = {
         next: (response: any) => {
 
           this.tasks = response.data || [];
+          this.allTasks = [...this.tasks];
+
+          this.calculateProductivity();
 
           this.isLoading = false;
 
@@ -89,6 +111,8 @@ user = {
           this.tasks.filter(
             task => task.id !== id
           );
+
+        this.calculateProductivity();
 
         alert('Task deleted successfully');
       },
@@ -257,27 +281,34 @@ loadTasksByPriority(): void {
 
 showAllTasks(): void {
 
-  this.loadTasks();
+  this.tasks = [...this.allTasks];
 }
+showTodayTasks(): void {
 
+  const today =
+    new Date().toDateString();
+
+  this.tasks =
+    this.allTasks.filter(task => {
+
+      return (
+        new Date(task.createdAt)
+          .toDateString()
+        ===
+        today
+      );
+    });
+    
+}
 isOverdue(dueDate: any): boolean {
-  if (!dueDate) return false;
-  return new Date(dueDate) < this.today;
+
+  if (!dueDate) {
+    return false;
+  }
+
+  return new Date(dueDate) < new Date();
 }
 
-searchTerm: string = '';
-
-
-
-selectedCategory: string = 'all';
-
-categoryOptions = [
-  'Assignment',
-  'Exam',
-  'Personal',
-  'Project',
-  'Other'
-];
 
 get filteredTasks(): Task[] {
   let result = this.tasks;
@@ -313,5 +344,85 @@ getCategoryClass(category: string | null): string {
     case 'Other':      return 'cat-other';
     default:           return 'cat-other';
   }
+}
+
+private calculateProductivity(): void {
+
+  const today = new Date();
+
+  const yesterday = new Date();
+
+  yesterday.setDate(
+    yesterday.getDate() - 1
+  );
+
+  const todayTasks =
+    this.tasks.filter(task => {
+
+      const createdDate =
+        new Date(task.createdAt);
+
+      return (
+        createdDate.toDateString() ===
+        today.toDateString()
+      );
+    });
+
+  const yesterdayTasks =
+    this.tasks.filter(task => {
+
+      const createdDate =
+        new Date(task.createdAt);
+
+      return (
+        createdDate.toDateString() ===
+        yesterday.toDateString()
+      );
+    });
+
+  this.todayTotalTasks =
+    todayTasks.length;
+
+  this.todayCompletedTasks =
+    todayTasks.filter(
+      t => t.status === 2
+    ).length;
+
+  this.yesterdayTotalTasks =
+    yesterdayTasks.length;
+
+  this.yesterdayCompletedTasks =
+    yesterdayTasks.filter(
+      t => t.status === 2
+    ).length;
+
+  this.todayCompletionRate =
+    this.todayTotalTasks === 0
+      ? 0
+      : Math.round(
+          (
+            this.todayCompletedTasks /
+            this.todayTotalTasks
+          ) * 100
+        );
+
+  this.yesterdayCompletionRate =
+    this.yesterdayTotalTasks === 0
+      ? 0
+      : Math.round(
+          (
+            this.yesterdayCompletedTasks /
+            this.yesterdayTotalTasks
+          ) * 100
+        );
+
+  this.productivityDifference =
+    this.todayCompletionRate -
+    this.yesterdayCompletionRate;
+
+  this.absoluteDifference =
+    Math.abs(
+      this.productivityDifference
+    );
 }
 }
