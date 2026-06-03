@@ -79,7 +79,7 @@ namespace StudentTM.API.Controllers
         public async Task<IActionResult> GetTasks()
         {
             var userId = User.FindFirstValue(
-                ClaimTypes.NameIdentifier);
+                ClaimTypes.NameIdentifier);   
 
             if (string.IsNullOrEmpty(userId))
             {
@@ -90,6 +90,8 @@ namespace StudentTM.API.Controllers
                 await taskRepository.GetTasksByUserIdAsync(
                     Guid.Parse(userId));
 
+            //Domain model to DTO
+
             var response = tasks.Select(task => new TaskDto
             {
                 Id = task.Id,
@@ -98,7 +100,8 @@ namespace StudentTM.API.Controllers
                 DueDate = task.DueDate,
                 Priority = task.Priority,
                 Status = task.Status,
-                CreatedAt = task.CreatedAt
+                CreatedAt = task.CreatedAt,
+                Category = task.Category
             });
 
             return Ok(new ApiResponseDto
@@ -109,7 +112,7 @@ namespace StudentTM.API.Controllers
             });
         }
         [HttpGet]
-        [Route("{id:guid}")]
+        [Route("{id:guid}")] //Tells asp.net to only accept req where Id parameter is a valid Guid format
         public async Task<IActionResult> GetTaskById(
     Guid id)
         {
@@ -144,7 +147,7 @@ namespace StudentTM.API.Controllers
         }
         // UPDATE TASK
         [HttpPut]
-        [Route("{id:guid}")]
+        [Route("{id:guid}")] 
         public async Task<IActionResult> UpdateTask(
             Guid id,
             UpdateTaskRequestDto request)
@@ -164,6 +167,9 @@ namespace StudentTM.API.Controllers
             {
                 return Unauthorized();
             }
+
+            //DTO to Domain Model ?
+            //DTO is what client sends ,domain model is what db stores,so to perform db operations,we need the data to be in domain model format
 
             var task = new TaskItem
             {
@@ -202,8 +208,13 @@ namespace StudentTM.API.Controllers
         [Route("{id:guid}")]
         public async Task<IActionResult> DeleteTask(Guid id)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(); 
+
             var isDeleted =
-                await taskRepository.DeleteTaskAsync(id);
+                await taskRepository.DeleteTaskAsync(id, Guid.Parse(userId));
 
             if (!isDeleted)
             {

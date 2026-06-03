@@ -33,8 +33,8 @@ namespace StudentTM.API.Repositories.Implementation
             command.Parameters.AddWithValue("@Description",
                 (object?)task.Description ?? DBNull.Value);
 
-            command.Parameters.AddWithValue("@DueDate",
-                (object?)task.DueDate ?? DBNull.Value);
+            command.Parameters.AddWithValue("@DueDate", task.DueDate);
+
 
             command.Parameters.AddWithValue("@Priority",
                 (int)task.Priority);
@@ -209,7 +209,7 @@ namespace StudentTM.API.Repositories.Implementation
             command.Parameters.AddWithValue("@UpdatedAt",
                 (object?)task.UpdatedAt ?? DBNull.Value);
 
-            // IMPORTANT FIX
+            
             command.Parameters.AddWithValue("@UserId",
                 task.UserId);
             command.Parameters.AddWithValue("@Category",
@@ -222,7 +222,7 @@ namespace StudentTM.API.Repositories.Implementation
 
             return rowsAffected > 0;
         }
-        public async Task<bool> DeleteTaskAsync(Guid taskId)
+        public async Task<bool> DeleteTaskAsync(Guid taskId, Guid userId)
         {
             var connectionString =
                 configuration.GetConnectionString("DefaultConnection");
@@ -236,6 +236,7 @@ namespace StudentTM.API.Repositories.Implementation
             command.CommandType = CommandType.StoredProcedure;
 
             command.Parameters.AddWithValue("@Id", taskId);
+            command.Parameters.AddWithValue("@UserId", userId);
 
             await connection.OpenAsync();
 

@@ -87,6 +87,7 @@
     
 
   </div>
+  <div class="overview-row">
   <div class="productivity-card">
 
   <h2>📊 Productivity Overview</h2>
@@ -130,6 +131,33 @@
     compared to yesterday
   </div>
 
+</div>
+
+<div class="deadlines-widget">
+  <h2>🕐 Upcoming Deadlines</h2>
+
+  <div *ngIf="upcomingTasks.length === 0" class="dl-empty">
+    No upcoming deadlines!
+  </div>
+
+  <div *ngFor="let task of upcomingTasks" class="deadline-row"
+    [ngClass]="isOverdue(task.dueDate) ? 'row-overdue' : 'row-normal'">
+
+    <div class="dl-info">
+      <p class="dl-name">{{ task.title }}</p>
+      <p class="dl-meta">📅 {{ getDeadlineLabel(task) }} · {{ task.category || 'General' }}</p>
+    </div>
+
+    <span class="dl-badge"
+      [ngClass]="{
+        'badge-overdue': isOverdue(task.dueDate),
+        'badge-today':   isDueToday(task.dueDate),
+        'badge-week':    !isOverdue(task.dueDate) && !isDueToday(task.dueDate)
+      }">
+      {{ isOverdue(task.dueDate) ? 'Overdue' : isDueToday(task.dueDate) ? 'Due Today' : 'This Week' }}
+    </span>
+  </div>
+  </div>
 </div>
   
   
@@ -200,12 +228,32 @@
     class="task-grid">
 
     <div
-      *ngFor="let task of filteredTasks"
-      class="task-card" [ngClass]="{ 'overdue-task': task.status !== 2 && isOverdue(task.dueDate) }">  <!-- TOP -->
+  *ngFor="let task of filteredTasks"
+  class="task-card"
+  [ngClass]="{
+    'overdue-task':
+      task.status !== 2 &&
+      isOverdue(task.dueDate),
+
+    'completed-task':
+      task.status === 2
+  }">
 
       <div class="task-top">
 
-  <h3>{{ task.title }}</h3>
+  <div class="task-title-section">
+
+    <span
+      class="completion-icon"
+      (click)="toggleTaskStatus(task)">
+
+      {{ task.status === 2 ? '☑' : '☐' }}
+
+    </span>
+
+    <h3>{{ task.title }}</h3>
+
+  </div>
 
   <div class="task-actions">
 
@@ -225,6 +273,8 @@
           : 'Low'
       }}
     </span>
+
+
 
     <button
       class="edit-btn"

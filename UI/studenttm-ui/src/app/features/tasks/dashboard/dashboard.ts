@@ -425,4 +425,67 @@ private calculateProductivity(): void {
       this.productivityDifference
     );
 }
+toggleTaskStatus(task: Task): void {
+
+  const updatedTask = {
+
+    ...task,
+
+    status:
+      task.status === 2
+        ? 0
+        : 2
+  };
+
+  this.taskService
+    .updateTask(task.id, updatedTask)
+    .subscribe({
+
+      next: () => {
+
+        task.status =
+          updatedTask.status;
+
+        this.calculateProductivity();
+
+        this.cdr.detectChanges();
+      },
+
+      error: (error) => {
+
+        console.error(error);
+
+        alert(
+          'Failed to update task status'
+        );
+      }
+    });
+}
+
+
+get upcomingTasks(): Task[] {
+  const now = new Date();
+  const in7 = new Date();
+  in7.setDate(now.getDate() + 7);
+
+  return this.allTasks
+    .filter(t => t.status !== 2 && t.dueDate && new Date(t.dueDate as any) <= in7)
+    .sort((a, b) => new Date(a.dueDate as any).getTime() - new Date(b.dueDate as any).getTime());
+}
+
+isDueToday(dueDate: any): boolean {
+  if (!dueDate) return false;
+  return new Date(dueDate as any).toDateString() === new Date().toDateString();
+}
+
+getDeadlineLabel(task: Task): string {
+  const now = new Date();
+  const due = new Date(task.dueDate as any);
+  const diff = Math.ceil((due.getTime() - now.getTime()) / 86400000);
+
+  if (due < now) return 'Overdue';
+  if (this.isDueToday(task.dueDate)) return 'Today';
+  if (diff === 1) return 'Tomorrow';
+  return `In ${diff} days`;
+}
 }

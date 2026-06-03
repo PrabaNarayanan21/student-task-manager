@@ -10,7 +10,7 @@ namespace StudentTM.API.Repositories.Interface
 
         Task<bool> UpdateTaskAsync(TaskItem task);
 
-        Task<bool> DeleteTaskAsync(Guid taskId);
+        Task<bool> DeleteTaskAsync(Guid taskId, Guid userId);
         Task<IEnumerable<TaskItem>> GetTasksByStatusAsync(Guid userId,TaskItemStatus status);
 
         Task<IEnumerable<TaskItem>> GetTasksSortedByPriorityAsync(Guid userId);
