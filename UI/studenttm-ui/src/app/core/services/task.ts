@@ -84,4 +84,10 @@ getTasksSortedByPriority(): Observable<ApiResponse<Task[]>> {
   );
 }
 
+getStreak(): Observable<any> {
+  return this.http.get(`${environment.apiBaseUrl}/Task/streak`, {
+
+  });
+}
+
 }

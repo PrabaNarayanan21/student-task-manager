@@ -51,6 +51,10 @@ user = {
 
   productivityDifference = 0;
   absoluteDifference = 0;
+
+  streakCount: number = 0;
+
+
   constructor(
     private taskService: TaskService,
     private cdr: ChangeDetectorRef,
@@ -60,6 +64,7 @@ user = {
   ngOnInit(): void {
 
     this.loadTasks();
+    this.loadStreak();
   }
 
   loadTasks(): void {
@@ -488,4 +493,17 @@ getDeadlineLabel(task: Task): string {
   if (diff === 1) return 'Tomorrow';
   return `In ${diff} days`;
 }
+
+loadStreak(): void {
+  this.taskService.getStreak().subscribe({
+    next: (response: any) => {
+      this.streakCount = response.data;
+      this.cdr.detectChanges();
+    },
+    error: (error: any) => {
+      console.error(error);
+    }
+  });
+}
+
 }

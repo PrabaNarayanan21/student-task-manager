@@ -34,7 +34,7 @@ export class Calendar implements OnInit {
   };
 
   selectedDateTasks: any[] = [];
-  selectedDate: string = '';
+  selectedDate: string | null = null;  
   allTasks: any[] = [];
 
   constructor(

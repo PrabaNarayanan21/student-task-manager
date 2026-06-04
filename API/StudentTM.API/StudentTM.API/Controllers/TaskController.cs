@@ -33,8 +33,8 @@ namespace StudentTM.API.Controllers
 
 
             // Get Logged-in User Id from JWT
-            var userId = User.FindFirstValue(
-                ClaimTypes.NameIdentifier);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);    //without userId,we can't link task to a user 
+                                                                            //extracts userId from JWT claims
 
             if (string.IsNullOrEmpty(userId))
             {
@@ -236,8 +236,10 @@ namespace StudentTM.API.Controllers
         [Route("pending")]
         public async Task<IActionResult> GetPendingTasks()
         {
-            var userId = User.FindFirstValue(
-                ClaimTypes.NameIdentifier);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
 
             var tasks = await taskRepository
                 .GetTasksByStatusAsync(
@@ -260,6 +262,9 @@ namespace StudentTM.API.Controllers
             var userId = User.FindFirstValue(
                 ClaimTypes.NameIdentifier);
 
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
             var tasks = await taskRepository
                 .GetTasksByStatusAsync(
                     Guid.Parse(userId),
@@ -279,6 +284,9 @@ namespace StudentTM.API.Controllers
         {
             var userId = User.FindFirstValue(
                 ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
 
             var tasks = await taskRepository
                 .GetTasksByStatusAsync(
@@ -315,6 +323,25 @@ namespace StudentTM.API.Controllers
                 Success = true,
                 Message = "Tasks are sorted by priority(desc) fetched successfully.",
                 Data = tasks
+            });
+        }
+
+        [HttpGet]
+        [Route("streak")]
+        public async Task<IActionResult> GetStreak()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var streak = await taskRepository.GetStreakAsync(Guid.Parse(userId));
+
+            return Ok(new ApiResponseDto
+            {
+                Success = true,
+                Message = "Streak fetched successfully.",
+                Data = streak
             });
         }
     }

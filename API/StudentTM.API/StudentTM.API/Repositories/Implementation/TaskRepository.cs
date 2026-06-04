@@ -329,5 +329,43 @@ namespace StudentTM.API.Repositories.Implementation
 
             return tasks;
         }
+
+        public async Task<int> GetStreakAsync(Guid userId)
+        {
+            var completedDates = new HashSet<DateTime>();
+            var connectionString =
+                configuration.GetConnectionString("DefaultConnection");
+            using var connection = new SqlConnection(connectionString);
+            using var command = new SqlCommand("sp_GetCompletedTaskDates", connection);
+            command.CommandType = CommandType.StoredProcedure;
+            command.Parameters.AddWithValue("@UserId", userId);
+
+            await connection.OpenAsync();
+            using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                var date = Convert.ToDateTime(reader["CompletedDate"]).Date;
+                completedDates.Add(date);
+            }
+
+            // Count streak backwards from today
+            int streak = 0;
+            var checkDate = DateTime.UtcNow.Date;
+
+            // If nothing completed today, start from yesterday
+            if (!completedDates.Contains(checkDate))
+            {
+                checkDate = checkDate.AddDays(-1);
+            }
+
+            while (completedDates.Contains(checkDate))
+            {
+                streak++;
+                checkDate = checkDate.AddDays(-1);
+            }
+
+            return streak;
+        }
     }
 }

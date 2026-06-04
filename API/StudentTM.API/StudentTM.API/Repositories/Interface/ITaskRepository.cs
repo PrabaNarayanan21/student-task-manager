@@ -15,5 +15,6 @@ namespace StudentTM.API.Repositories.Interface
 
         Task<IEnumerable<TaskItem>> GetTasksSortedByPriorityAsync(Guid userId);
         Task<TaskItem?> GetTaskByIdAsync(Guid id,Guid userId);
+        Task<int> GetStreakAsync(Guid userId);
     }
 }

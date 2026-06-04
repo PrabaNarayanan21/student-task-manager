@@ -24,7 +24,7 @@ export class AuthService {
       `${environment.apiBaseUrl}/Auth/Register`,
       request
     );
-  }
+  } 
 
   login(request: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(
