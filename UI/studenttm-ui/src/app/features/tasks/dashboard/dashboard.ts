@@ -305,13 +305,27 @@ showTodayTasks(): void {
     });
     
 }
-isOverdue(dueDate: any): boolean {
 
-  if (!dueDate) {
-    return false;
-  }
+isOverdue(task: Task): boolean {
+  if (!task.dueDate) return false;
+  
+  const now = new Date();
+  const today = now.toISOString().split('T')[0];
+  const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+  
+  // If due date is in the past
+  if (task.dueDate < today) return true;
+  
+  // If due date is today and has time that's passed
+  if (task.dueDate === today && task.dueTime && task.dueTime < currentTime) return true;
+  
+  return false;
+}
 
-  return new Date(dueDate) < new Date();
+isDueToday(task: Task): boolean {
+  if (!task.dueDate) return false;
+  const today = new Date().toISOString().split('T')[0];
+  return task.dueDate === today;
 }
 
 
@@ -467,32 +481,74 @@ toggleTaskStatus(task: Task): void {
     });
 }
 
+getFormattedDueDateTime(task: Task): string {
+  if (!task.dueDate) return 'No due date';
+  
+  if (task.dueTime) {
+    return `${task.dueDate} at ${task.dueTime}`;
+  }
+  return task.dueDate;
+}
+getDeadlineLabel(task: Task): string {
+  if (!task.dueDate) return 'No deadline';
+  
+  const now = new Date();
+  const today = now.toISOString().split('T')[0];
+  const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+  
+  if (this.isOverdue(task)) {
+    if (task.dueDate === today) {
+      return `Overdue (was due at ${task.dueTime})`;
+    }
+    return 'Overdue';
+  }
+  
+  if (task.dueDate === today) {
+    if (task.dueTime) {
+      return `Due today at ${task.dueTime}`;
+    }
+    return 'Due today';
+  }
+  
+  // Calculate days difference
+  const dueDate = new Date(task.dueDate);
+  const todayDate = new Date(today);
+  const diffDays = Math.ceil((dueDate.getTime() - todayDate.getTime()) / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 1) return 'Tomorrow';
+  if (diffDays <= 7) return `In ${diffDays} days`;
+  
+  return `Due on ${task.dueDate}`;
+}
 
 get upcomingTasks(): Task[] {
   const now = new Date();
-  const in7 = new Date();
-  in7.setDate(now.getDate() + 7);
-
+  const today = now.toISOString().split('T')[0];
+  const nextWeek = new Date();
+  nextWeek.setDate(nextWeek.getDate() + 7);
+  const nextWeekStr = nextWeek.toISOString().split('T')[0];
+  
   return this.allTasks
-    .filter(t => t.status !== 2 && t.dueDate && new Date(t.dueDate as any) <= in7)
-    .sort((a, b) => new Date(a.dueDate as any).getTime() - new Date(b.dueDate as any).getTime());
+    .filter(task => {
+      if (task.status === 2) return false; // Skip completed
+      if (!task.dueDate) return false;
+      return task.dueDate <= nextWeekStr || this.isOverdue(task);
+    })
+    .sort((a, b) => {
+      // Sort by due date first, then by time
+      if (a.dueDate !== b.dueDate) {
+        return a.dueDate!.localeCompare(b.dueDate!);
+      }
+      if (a.dueTime && b.dueTime) {
+        return a.dueTime.localeCompare(b.dueTime);
+      }
+      return 0;
+    });
 }
 
-isDueToday(dueDate: any): boolean {
-  if (!dueDate) return false;
-  return new Date(dueDate as any).toDateString() === new Date().toDateString();
-}
 
-getDeadlineLabel(task: Task): string {
-  const now = new Date();
-  const due = new Date(task.dueDate as any);
-  const diff = Math.ceil((due.getTime() - now.getTime()) / 86400000);
 
-  if (due < now) return 'Overdue';
-  if (this.isDueToday(task.dueDate)) return 'Today';
-  if (diff === 1) return 'Tomorrow';
-  return `In ${diff} days`;
-}
+
 
 loadStreak(): void {
   this.taskService.getStreak().subscribe({

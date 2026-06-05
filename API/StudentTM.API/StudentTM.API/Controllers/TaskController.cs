@@ -19,9 +19,9 @@ namespace StudentTM.API.Controllers
         {
             this.taskRepository = taskRepository;
         }
-
+        
         // CREATE TASK
-        [HttpPost]
+        [HttpPost] 
         public async Task<IActionResult> CreateTask(
             CreateTaskRequestDto request)
         {
@@ -41,12 +41,19 @@ namespace StudentTM.API.Controllers
                 return Unauthorized();
             }
 
+            DateOnly? dueDate = null;
+            if (!string.IsNullOrEmpty(request.DueDate))
+            {
+                dueDate = DateOnly.Parse(request.DueDate);
+            }
+
             var task = new TaskItem
             {
                 Id = Guid.NewGuid(),
                 Title = request.Title,
                 Description = request.Description,
-                DueDate = request.DueDate,
+                DueDate = dueDate,
+                DueTime = request.DueTime,
                 Priority = request.Priority,
                 Status = request.Status,
                 Category = request.Category,
@@ -97,7 +104,8 @@ namespace StudentTM.API.Controllers
                 Id = task.Id,
                 Title = task.Title,
                 Description = task.Description,
-                DueDate = task.DueDate,
+                DueDate = task.DueDate?.ToString("yyyy-MM-dd"),
+                DueTime = task.DueTime,
                 Priority = task.Priority,
                 Status = task.Status,
                 CreatedAt = task.CreatedAt,
@@ -115,7 +123,7 @@ namespace StudentTM.API.Controllers
         [Route("{id:guid}")] //Tells asp.net to only accept req where Id parameter is a valid Guid format
         public async Task<IActionResult> GetTaskById(
     Guid id)
-        {
+        {   
             var userId = User.FindFirstValue(
                 ClaimTypes.NameIdentifier);
 
@@ -137,6 +145,20 @@ namespace StudentTM.API.Controllers
                     Message = "Task not found."
                 });
             }
+
+            var response = new TaskDto
+            {
+                Id = task.Id,
+                Title = task.Title,
+                Description = task.Description,
+                DueDate = task.DueDate?.ToString("yyyy-MM-dd"),
+                DueTime = task.DueTime,
+                Priority = task.Priority,
+                Status = task.Status,
+                CreatedAt = task.CreatedAt,
+                Category = task.Category
+            };
+
 
             return Ok(new ApiResponseDto
             {
@@ -167,7 +189,11 @@ namespace StudentTM.API.Controllers
             {
                 return Unauthorized();
             }
-
+            DateOnly? dueDate = null;
+            if (!string.IsNullOrEmpty(request.DueDate))
+            {
+                dueDate = DateOnly.Parse(request.DueDate);
+            }
             //DTO to Domain Model ?
             //DTO is what client sends ,domain model is what db stores,so to perform db operations,we need the data to be in domain model format
 
@@ -176,7 +202,8 @@ namespace StudentTM.API.Controllers
                 Id = id,
                 Title = request.Title,
                 Description = request.Description,
-                DueDate = request.DueDate,
+                DueDate = dueDate,
+                DueTime = request.DueTime,
                 Priority = request.Priority,
                 Status = request.Status,
                 Category = request.Category,
@@ -246,6 +273,18 @@ namespace StudentTM.API.Controllers
                     Guid.Parse(userId),
                     TaskItemStatus.Pending);
 
+            var response = tasks.Select(task => new TaskDto
+            {
+                Id = task.Id,
+                Title = task.Title,
+                Description = task.Description,
+                DueDate = task.DueDate?.ToString("yyyy-MM-dd"),
+                Priority = task.Priority,
+                Status = task.Status,
+                CreatedAt = task.CreatedAt,
+                Category = task.Category
+            });
+
             return Ok(new ApiResponseDto
             {
                 Success = true,
@@ -270,6 +309,18 @@ namespace StudentTM.API.Controllers
                     Guid.Parse(userId),
                     TaskItemStatus.InProgress);
 
+            var response = tasks.Select(task => new TaskDto
+            {
+                Id = task.Id,
+                Title = task.Title,
+                Description = task.Description,
+                DueDate = task.DueDate?.ToString("yyyy-MM-dd"),
+                Priority = task.Priority,
+                Status = task.Status,
+                CreatedAt = task.CreatedAt,
+                Category = task.Category
+            });
+
             return Ok(new ApiResponseDto
             {
                 Success = true,
@@ -292,6 +343,21 @@ namespace StudentTM.API.Controllers
                 .GetTasksByStatusAsync(
                     Guid.Parse(userId),
                     TaskItemStatus.Completed);
+
+
+            var response = tasks.Select(task => new TaskDto
+            {
+                Id = task.Id,
+                Title = task.Title,
+                Description = task.Description,
+                DueDate = task.DueDate?.ToString("yyyy-MM-dd"),
+                Priority = task.Priority,
+                Status = task.Status,
+                CreatedAt = task.CreatedAt,
+                Category = task.Category
+            });
+
+
 
             return Ok(new ApiResponseDto
             {
@@ -317,6 +383,20 @@ namespace StudentTM.API.Controllers
             var tasks = await taskRepository
                 .GetTasksSortedByPriorityAsync(
                     Guid.Parse(userId));
+
+
+            var response = tasks.Select(task => new TaskDto
+            {
+                Id = task.Id,
+                Title = task.Title,
+                Description = task.Description,
+                DueDate = task.DueDate?.ToString("yyyy-MM-dd"),
+                Priority = task.Priority,
+                Status = task.Status,
+                CreatedAt = task.CreatedAt,
+                Category = task.Category
+            });
+
 
             return Ok(new ApiResponseDto
             {

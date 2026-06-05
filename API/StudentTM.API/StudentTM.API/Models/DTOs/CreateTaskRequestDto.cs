@@ -12,7 +12,8 @@ namespace StudentTM.API.Models.DTOs
         [MaxLength(1000)]
         public string? Description { get; set; }
 
-        public DateTime? DueDate { get; set; }
+        public string? DueDate { get; set; }
+        public string? DueTime { get; set; }
 
         [Required]
         public Priority Priority { get; set; }

@@ -1,148 +1,20 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-.cal-page-header {
-  margin-bottom: 24px;
-}
+body { background-color: #f5f7fb; font-family: Arial, sans-serif; }
 
-.cal-page-header h1 {
-  font-size: 28px;
-  font-weight: 600;
-  color: #111827;
-}
-
-.cal-page-header p {
-  color: #6b7280;
-  margin-top: 5px;
-}
-
-.cal-layout {
-  display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: 24px;
-  align-items: start;
-}
-
-.cal-wrapper {
-  background: white;
-  border-radius: 20px;
-  padding: 24px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
-}
-
-.task-list-panel {
-  background: white;
-  border-radius: 20px;
-  padding: 24px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
-  min-height: 300px;
-}
-
-.task-list-panel h3 {
-  font-size: 16px;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 16px;
-}
-
-.no-date-selected p,
-.no-tasks {
-  color: #9ca3af;
-  font-size: 14px;
-  text-align: center;
-  margin-top: 40px;
-}
-
-.task-item {
-  background: #f9fafb;
-  border-radius: 12px;
-  padding: 14px;
-  margin-bottom: 12px;
-  border-left: 4px solid #6c63ff;
-}
-
-.task-item-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
-}
-
-.task-item-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #111827;
-}
-
-.task-item-desc {
-  font-size: 13px;
-  color: #6b7280;
-  margin-bottom: 10px;
-}
-
-.task-item-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.due-time {
-  font-size: 12px;
-  color: #9ca3af;
-}
-
-.cat-tag {
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 20px;
-  background: #ede9fe;
-  color: #4c1d95;
-  font-weight: 500;
-}
-
-.status-badge {
-  font-size: 11px;
-  padding: 3px 8px;
-  border-radius: 20px;
-  font-weight: 500;
-}
-
-.pending-status { background: #fef3c7; color: #92400e; }
-.progress-status { background: #dbeafe; color: #1e40af; }
-.completed-status { background: #d1fae5; color: #065f46; }
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  background-color: #f5f7fb;
-  font-family: Arial, sans-serif;
-}
-
-.dashboard-container {
-  display: flex;
-  min-height: 100vh;
-  background-color: #f5f7fb;
-}
+.dashboard-container { display: flex; min-height: 100vh; }
 
 .sidebar {
   width: 250px;
-  background-color: white;
+  background: white;
   padding: 30px 20px;
   border-right: 1px solid #e5e7eb;
   flex-shrink: 0;
 }
 
-.logo-section h2 {
-  color: #6c63ff;
-  margin-bottom: 50px;
-}
+.logo-section h2 { color: #6c63ff; margin-bottom: 50px; }
 
-.sidebar-menu {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+.sidebar-menu { display: flex; flex-direction: column; gap: 16px; }
 
 .menu-item {
   padding: 14px 18px;
@@ -154,68 +26,209 @@ body {
   font-weight: 500;
 }
 
-.menu-item:hover {
-  background-color: #f3f4f6;
+.menu-item:hover { background: #f3f4f6; }
+.active { background: #6c63ff; color: white; }
+.logout { margin-top: 30px; color: #dc3545; }
+
+.main-content { flex: 1; padding: 30px; }
+
+.cal-page-header { margin-bottom: 24px; }
+.cal-page-header h1 { font-size: 28px; font-weight: 600; color: #111827; }
+.cal-page-header p { color: #6b7280; margin-top: 5px; }
+
+.cal-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 20px;
+  align-items: start;
 }
 
-.active {
-  background-color: #6c63ff;
-  color: white;
+/* CALENDAR WRAPPER */
+.cal-wrapper {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
 }
 
-.logout {
-  margin-top: 30px;
-  color: #dc3545;
+/* SUMMARY */
+.summary-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
 }
 
-.main-content {
-  flex: 1;
-  padding: 30px;
+.sum-card {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 10px;
+  text-align: center;
 }
 
-:host ::ng-deep .fc {
-  font-family: Arial, sans-serif;
+.sum-num { font-size: 22px; font-weight: 700; color: #111827; }
+.sum-lbl { font-size: 11px; color: #6b7280; margin-top: 2px; }
+.overdue-num { color: #ef4444; }
+.done-num { color: #10b981; }
+.pending-num { color: #6c63ff; }
+
+/* LEGEND */
+.legend {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
 }
 
-:host ::ng-deep .fc-toolbar-title {
-  font-size: 20px !important;
+.leg-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.leg-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* MONTH NAV */
+.month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.month-title { font-size: 16px; font-weight: 600; color: #111827; }
+
+.nav-btn {
+  background: #f3f4f6;
+  border: none;
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  font-size: 20px;
+  cursor: pointer;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-btn:hover { background: #e5e7eb; }
+
+/* DAY LABELS */
+.day-labels {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.day-labels span {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6c63ff;
+  padding: 4px 0;
+}
+
+/* CALENDAR GRID */
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.cal-cell {
+  min-height: 60px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  padding: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.cal-cell:hover { background: #f3f4f6; }
+.cal-cell.empty { background: transparent; border-color: transparent; cursor: default; }
+.cal-cell.today { border: 2px solid #6c63ff; }
+.cal-cell.selected { background: #eef2ff; border-color: #6c63ff; }
+
+.day-num {
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.today .day-num { color: #6c63ff; }
+
+.dots { display: flex; flex-wrap: wrap; gap: 3px; }
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+/* TASK PANEL */
+.task-list-panel {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+  min-height: 300px;
+}
+
+.task-list-panel h3 {
+  font-size: 15px;
   font-weight: 600;
   color: #111827;
+  margin-bottom: 14px;
 }
 
-:host ::ng-deep .fc-button-primary {
-  background-color: #6c63ff !important;
-  border-color: #6c63ff !important;
-  border-radius: 8px !important;
+.no-date-selected p,
+.no-tasks {
+  color: #9ca3af;
+  font-size: 13px;
+  text-align: center;
+  margin-top: 40px;
 }
 
-:host ::ng-deep .fc-button-primary:hover {
-  background-color: #4f46e5 !important;
+/* TASK CARDS */
+.task-item {
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 10px;
 }
 
-:host ::ng-deep .fc-day-today {
-  background-color: #eef2ff !important;
+.card-overdue   { background: #fff5f5; border-left: 4px solid #ef4444; }
+.card-completed { background: #f0fdf4; border-left: 4px solid #10b981; }
+.card-progress  { background: #fffbeb; border-left: 4px solid #f59e0b; }
+.card-pending   { background: #f5f3ff; border-left: 4px solid #6c63ff; }
+
+.task-time { font-size: 11px; color: #9ca3af; margin-bottom: 3px; }
+
+.task-item-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 6px;
 }
 
-:host ::ng-deep .fc-daygrid-day-number {
-  color: #374151;
+.status-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 20px;
   font-weight: 500;
 }
 
-:host ::ng-deep .fc-col-header-cell-cushion {
-  color: #6c63ff;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-:host ::ng-deep .fc-event {
-  border-radius: 6px !important;
-  padding: 2px 6px !important;
-  font-size: 12px !important;
-  cursor: pointer;
-}
-
-:host ::ng-deep .fc-daygrid-day:hover {
-  background-color: #f9fafb;
-  cursor: pointer;
-}
+.pending-status   { background: #fef3c7; color: #92400e; }
+.progress-status  { background: #dbeafe; color: #1e40af; }
+.completed-status { background: #d1fae5; color: #065f46; }

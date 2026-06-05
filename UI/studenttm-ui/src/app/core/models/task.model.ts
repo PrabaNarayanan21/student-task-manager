@@ -7,7 +7,8 @@ export interface Task {
   id: string;
   title: string;
   description: string | null;
-  dueDate: Date | null;
+  dueDate: string | null;
+  dueTime: string | null;
   priority: Priority;
   status: TaskItemStatus;
   createdAt: Date;

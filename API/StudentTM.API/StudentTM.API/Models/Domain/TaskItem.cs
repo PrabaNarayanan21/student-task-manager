@@ -14,7 +14,9 @@ namespace StudentTM.API.Models.Domain
         [MaxLength(1000)]
         public string? Description { get; set; }
 
-        public DateTime? DueDate { get; set; }
+        public DateOnly? DueDate { get; set; }
+
+        public string? DueTime { get; set; }  
 
         [Required]
         public Priority Priority { get; set; }

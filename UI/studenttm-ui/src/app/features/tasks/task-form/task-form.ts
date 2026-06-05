@@ -129,11 +129,11 @@ export class TaskForm implements OnInit {
           if (task.dueDate) {
 
             this.dueDate =
-              task.dueDate.substring(0, 10);
+              task.dueDate;
           }
 
-          if (task.taskTime) {
-            this.taskTime = task.taskTime;
+          if (task.dueTime) {
+            this.taskTime = task.dueTime;
           }
 
           this.cdr.detectChanges();
@@ -181,18 +181,10 @@ export class TaskForm implements OnInit {
     this.isSubmitting = true;
 
     // FORMAT DATE
-    let formattedDueDate = null;
+    let formattedDueDate: string | null = null;
 
 if (this.dueDate) {
-  const dateString = this.taskTime
-    ? `${this.dueDate}T${this.taskTime}`  // e.g. "2026-05-29T14:30"
-    : `${this.dueDate}T00:00:00`;         // e.g. "2026-05-29T00:00:00"
-
-  formattedDueDate = new Date(dateString);
-
-  if (isNaN(formattedDueDate.getTime())) {
-    formattedDueDate = null;
-  }
+  formattedDueDate = this.dueDate;
 }
 
     // PAYLOAD
@@ -204,8 +196,8 @@ if (this.dueDate) {
       description:
         this.description.trim() || null,
 
-      dueDate: formattedDueDate,
-
+      dueDate: this.dueDate || null,
+      dueTime: this.taskTime || null,
       priority: Number(this.priority),
 
       status: Number(this.status),

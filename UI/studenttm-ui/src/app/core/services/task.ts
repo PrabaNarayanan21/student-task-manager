@@ -23,7 +23,7 @@ export class TaskService {
   getTasks():
     Observable<ApiResponse<Task[]>> { return this.http.get<ApiResponse<Task[]>>(
       `${environment.apiBaseUrl}/Task`);
-  }
+  } 
   // CREATE NEW TASK
   createTask(task: Partial<Task>): Observable<ApiResponse<Task>> {
     return this.http.post<ApiResponse<Task>>(

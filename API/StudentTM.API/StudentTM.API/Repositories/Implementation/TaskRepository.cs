@@ -15,6 +15,9 @@ namespace StudentTM.API.Repositories.Implementation
             this.configuration = configuration;
         }
 
+        
+        
+
         public async Task<bool> CreateTaskAsync(TaskItem task)
         {
             var connectionString =
@@ -33,8 +36,8 @@ namespace StudentTM.API.Repositories.Implementation
             command.Parameters.AddWithValue("@Description",
                 (object?)task.Description ?? DBNull.Value);
 
-            command.Parameters.AddWithValue("@DueDate", task.DueDate);
-
+            command.Parameters.AddWithValue("@DueDate", (object?)(task.DueDate) ?? DBNull.Value);
+            command.Parameters.AddWithValue("@DueTime", (object?)task.DueTime ?? DBNull.Value);
 
             command.Parameters.AddWithValue("@Priority",
                 (int)task.Priority);
@@ -89,7 +92,10 @@ namespace StudentTM.API.Repositories.Implementation
                     Description = reader["Description"]?.ToString(),
                     DueDate = reader["DueDate"] == DBNull.Value
                         ? null
-                        : Convert.ToDateTime(reader["DueDate"]),
+                        : DateOnly.FromDateTime(Convert.ToDateTime(reader["DueDate"])),
+                    DueTime = reader["DueTime"] == DBNull.Value
+                        ? null
+                        : reader["DueTime"].ToString(),
                     Priority = (Enums.Priority)
                         Convert.ToInt32(reader["Priority"]),
                     Status = (Enums.TaskItemStatus)
@@ -147,11 +153,12 @@ namespace StudentTM.API.Repositories.Implementation
                     Description =
                         reader["Description"]?.ToString(),
 
-                    DueDate =
-                        reader["DueDate"] == DBNull.Value
+                    DueDate = reader["DueDate"] == DBNull.Value
                         ? null
-                        : Convert.ToDateTime(reader["DueDate"]),
-
+                        : DateOnly.FromDateTime(Convert.ToDateTime(reader["DueDate"])),
+                    DueTime = reader["DueTime"] == DBNull.Value
+                        ? null
+                        : reader["DueTime"].ToString(),
                     Priority =
                         (Priority)Convert.ToInt32(
                             reader["Priority"]),
@@ -197,9 +204,8 @@ namespace StudentTM.API.Repositories.Implementation
             command.Parameters.AddWithValue("@Description",
                 (object?)task.Description ?? DBNull.Value);
 
-            command.Parameters.AddWithValue("@DueDate",
-                (object?)task.DueDate ?? DBNull.Value);
-
+            command.Parameters.AddWithValue("@DueDate", (object?)(task.DueDate) ?? DBNull.Value);
+            command.Parameters.AddWithValue("@DueTime", (object?)task.DueTime ?? DBNull.Value);
             command.Parameters.AddWithValue("@Priority",
                 (int)task.Priority);
 
@@ -275,7 +281,10 @@ namespace StudentTM.API.Repositories.Implementation
                     Id = Guid.Parse(reader["Id"].ToString()),
                     Title = reader["Title"].ToString(),
                     Description = reader["Description"]?.ToString(),
-                    DueDate = reader["DueDate"] as DateTime?,
+                    DueDate = reader["DueDate"] == DBNull.Value
+                        ? null : DateOnly.FromDateTime(Convert.ToDateTime(reader["DueDate"])),
+                    DueTime = reader["DueTime"] == DBNull.Value
+                        ? null: reader["DueTime"].ToString(),
                     Priority = (Priority)reader["Priority"],
                     Status = (TaskItemStatus)reader["Status"],
                     CreatedAt = (DateTime)reader["CreatedAt"],
@@ -317,7 +326,10 @@ namespace StudentTM.API.Repositories.Implementation
                     Id = Guid.Parse(reader["Id"].ToString()),
                     Title = reader["Title"].ToString(),
                     Description = reader["Description"]?.ToString(),
-                    DueDate = reader["DueDate"] as DateTime?,
+                    DueDate = reader["DueDate"] == DBNull.Value
+                        ? null : DateOnly.FromDateTime(Convert.ToDateTime(reader["DueDate"])),
+                    DueTime = reader["DueTime"] == DBNull.Value
+                        ? null: reader["DueTime"].ToString(),
                     Priority = (Priority)reader["Priority"],
                     Status = (TaskItemStatus)reader["Status"],
                     CreatedAt = (DateTime)reader["CreatedAt"],
@@ -332,7 +344,7 @@ namespace StudentTM.API.Repositories.Implementation
 
         public async Task<int> GetStreakAsync(Guid userId)
         {
-            var completedDates = new HashSet<DateTime>();
+            var completedDates = new HashSet<DateOnly>();
             var connectionString =
                 configuration.GetConnectionString("DefaultConnection");
             using var connection = new SqlConnection(connectionString);
@@ -346,12 +358,12 @@ namespace StudentTM.API.Repositories.Implementation
             while (await reader.ReadAsync())
             {
                 var date = Convert.ToDateTime(reader["CompletedDate"]).Date;
-                completedDates.Add(date);
+                completedDates.Add(DateOnly.FromDateTime(date));
             }
 
             // Count streak backwards from today
             int streak = 0;
-            var checkDate = DateTime.UtcNow.Date;
+            var checkDate = DateOnly.FromDateTime(DateTime.UtcNow.Date);
 
             // If nothing completed today, start from yesterday
             if (!completedDates.Contains(checkDate))

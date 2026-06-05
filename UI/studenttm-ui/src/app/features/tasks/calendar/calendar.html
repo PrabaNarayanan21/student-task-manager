@@ -1,10 +1,7 @@
 <div class="dashboard-container">
 
-  <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="logo-section">
-      <h2>StudentTM</h2>
-    </div>
+    <div class="logo-section"><h2>StudentTM</h2></div>
     <nav class="sidebar-menu">
       <a class="menu-item" routerLink="/dashboard">🏠 Dashboard</a>
       <a class="menu-item" routerLink="/tasks/create">➕ Create Task</a>
@@ -13,7 +10,6 @@
     </nav>
   </aside>
 
-  <!-- MAIN -->
   <main class="main-content">
 
     <div class="cal-page-header">
@@ -23,57 +19,96 @@
 
     <div class="cal-layout">
 
-      <!-- CALENDAR -->
+      <!-- LEFT: CALENDAR -->
       <div class="cal-wrapper">
-        <full-calendar [options]="calendarOptions"></full-calendar>
+
+        <!-- Summary -->
+        <div class="summary-row">
+          <div class="sum-card"><div class="sum-num">{{ getMonthTasks().length }}</div><div class="sum-lbl">Total</div></div>
+          <div class="sum-card"><div class="sum-num overdue-num">{{ getOverdueCount() }}</div><div class="sum-lbl">Overdue</div></div>
+          <div class="sum-card"><div class="sum-num done-num">{{ getCompletedCount() }}</div><div class="sum-lbl">Done</div></div>
+          <div class="sum-card"><div class="sum-num pending-num">{{ getPendingCount() }}</div><div class="sum-lbl">Pending</div></div>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend">
+          <span class="leg-item"><span class="leg-dot" style="background:#ef4444"></span>Overdue</span>
+          <span class="leg-item"><span class="leg-dot" style="background:#10b981"></span>Completed</span>
+          <span class="leg-item"><span class="leg-dot" style="background:#6c63ff"></span>Pending</span>
+          <span class="leg-item"><span class="leg-dot" style="background:#f59e0b"></span>In Progress</span>
+        </div>
+
+        <!-- Month Navigation -->
+        <div class="month-nav">
+          <button class="nav-btn" (click)="prevMonth()">&#8249;</button>
+          <span class="month-title">{{ getMonthTitle() }}</span>
+          <button class="nav-btn" (click)="nextMonth()">&#8250;</button>
+        </div>
+
+        <!-- Day Labels -->
+        <div class="day-labels">
+          <span *ngFor="let d of dayNames">{{ d }}</span>
+        </div>
+
+        <!-- Calendar Grid -->
+        <div class="cal-grid">
+          <div
+            *ngFor="let cell of calendarCells"
+            class="cal-cell"
+            [ngClass]="{
+              'empty': !cell.day,
+              'today': cell.isToday,
+              'selected': cell.isSelected
+            }"
+            (click)="cell.day && selectDate(cell)">
+
+            <span *ngIf="cell.day" class="day-num">{{ cell.day }}</span>
+
+            <div *ngIf="cell.day" class="dots">
+              <span
+                *ngFor="let dot of cell.dots"
+                class="dot"
+                [style.background]="dot">
+              </span>
+            </div>
+
+          </div>
+        </div>
+
       </div>
 
-      <!-- TASK LIST FOR SELECTED DATE -->
+      <!-- RIGHT: TASK DETAIL PANEL -->
       <div class="task-list-panel">
 
         <div *ngIf="!selectedDate" class="no-date-selected">
-          <p>Click a date or task to see details</p>
+          <p>Click a date to see tasks</p>
         </div>
 
         <div *ngIf="selectedDate">
-          <h3>Tasks for {{ selectedDate | date:'mediumDate' }}</h3>
+
+          <h3>{{ selectedDate | date:'EEE, MMM d' }}</h3>
 
           <div *ngIf="selectedDateTasks.length === 0" class="no-tasks">
-            No tasks due on this date.
+            No tasks on this date.
           </div>
 
           <div
             *ngFor="let task of selectedDateTasks"
-            class="task-item">
+            class="task-item"
+            [ngClass]="getTaskCardClass(task)">
 
-            <div class="task-item-top">
-              <span class="task-item-title">{{ task.title }}</span>
-              <span
-                class="status-badge"
-                [ngClass]="getStatusClass(task.status)">
-                {{ getStatusText(task.status) }}
-              </span>
-            </div>
-
-            <p *ngIf="task.description" class="task-item-desc">
-              {{ task.description }}
-            </p>
-
-            <div class="task-item-footer">
-              <span *ngIf="task.category" class="cat-tag">
-                {{ task.category }}
-              </span>
-              <span class="due-time">
-                {{ task.dueDate | date:'shortTime' }}
-              </span>
-            </div>
+            <div class="task-time">{{ task.dueDate | date:'shortTime' }}</div>
+            <div class="task-item-title">{{ task.title }}</div>
+            <span class="status-badge" [ngClass]="getStatusClass(task.status)">
+              {{ getStatusText(task.status) }}
+            </span>
 
           </div>
+
         </div>
 
       </div>
 
     </div>
-
   </main>
 </div>

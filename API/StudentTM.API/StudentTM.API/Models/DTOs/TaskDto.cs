@@ -10,7 +10,8 @@ namespace StudentTM.API.Models.DTOs
 
         public string? Description { get; set; }
 
-        public DateTime? DueDate { get; set; }
+        public string? DueDate { get; set; }
+        public string? DueTime { get; set; }
 
         public Priority Priority { get; set; }
 
