@@ -10,7 +10,7 @@ import { Task } from '../models/task.model';
 
 import { ApiResponse } from '../models/api-response.model';
 
-@Injectable({
+@Injectable({ 
   providedIn: 'root'
 })
 export class TaskService {
@@ -33,38 +33,33 @@ export class TaskService {
   }
 
   //Get task by id
-  getTaskById(id: string) {
-
-  return this.http.get(
+  getTaskById(id: string): Observable<ApiResponse<Task>> {
+  return this.http.get<ApiResponse<Task>>(
     `${environment.apiBaseUrl}/Task/${id}`
   );
 }
   
   // UPDATE TASK
-  updateTask(id: string, task: any) {
-
-  return this.http.put(
+updateTask(id: string, task: Partial<Task>): Observable<ApiResponse<Task>> {
+  return this.http.put<ApiResponse<Task>>(
     `${environment.apiBaseUrl}/Task/${id}`,
     task
   );
 }
   // delete task by id
-  deleteTask(id: string) {
-
-  return this.http.delete(
+  deleteTask(id: string): Observable<ApiResponse<void>> {  //ApiResponse<void> -> delete returns no data
+  return this.http.delete<ApiResponse<void>>(
     `${environment.apiBaseUrl}/Task/${id}`
   );
 }
 
-  getPendingTasks(): Observable<ApiResponse<Task[]>> {
-
+getPendingTasks(): Observable<ApiResponse<Task[]>> {
   return this.http.get<ApiResponse<Task[]>>(
     `${environment.apiBaseUrl}/Task/pending`
   );
 }
 
 getInProgressTasks(): Observable<ApiResponse<Task[]>> {
-
   return this.http.get<ApiResponse<Task[]>>(
     `${environment.apiBaseUrl}/Task/inprogress`
   );
@@ -84,10 +79,8 @@ getTasksSortedByPriority(): Observable<ApiResponse<Task[]>> {
   );
 }
 
-getStreak(): Observable<any> {
-  return this.http.get(`${environment.apiBaseUrl}/Task/streak`, {
-
-  });
+getStreak(): Observable<any> {  //how many consecutive days user has completed at least one task
+  return this.http.get(`${environment.apiBaseUrl}/Task/streak`);
 }
 
 }

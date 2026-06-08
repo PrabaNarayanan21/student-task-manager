@@ -1,19 +1,13 @@
-import {
-  Component,
-  OnInit,
-  ChangeDetectorRef
-} from '@angular/core';
+import { Component,OnInit,ChangeDetectorRef } from '@angular/core';
 
 import { CommonModule } from '@angular/common';
 
-import { RouterModule, Router }
-from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 
-import { TaskService }
-from '../../../core/services/task';
+import { TaskService } from '../../../core/services/task';
 
-import { Task }
-from '../../../core/models/task.model';
+import { Task } from '../../../core/models/task.model';
+
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -24,15 +18,13 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./dashboard.css']
 })
 export class Dashboard implements OnInit {
-user = {
-  name: localStorage.getItem('username') || 'User'
-};
-  tasks: Task[] = [];
-  allTasks: Task[] = [];
-  isLoading = true;
-  today: Date = new Date();
-  searchTerm: string = '';
-  selectedCategory: string = 'all';
+  user = { name: localStorage.getItem('username') || 'User'};
+  tasks: Task[] = []; //currently displayed tasks - change when filters applied
+  allTasks: Task[] = []; //a permanent copy of all tasks from API - never filtered, used to reset filters and apply new ones
+  isLoading = true; //starts as true to show loading spinner until API response is received
+  today: Date = new Date(); //current date - used for overdue and due today calculations
+  searchTerm: string = ''; //bound to search input via [(ngModel)]
+  selectedCategory: string = 'all'; //default to show all categories
 
   categoryOptions = [
     'Assignment',
@@ -40,7 +32,9 @@ user = {
     'Personal',
     'Project',
     'Other'
-  ];
+  ]; //for filter dropdown - can be expanded in the future
+
+  // Productivity tracking variables
   todayTotalTasks = 0;
   todayCompletedTasks = 0;
   todayCompletionRate = 0;
@@ -56,214 +50,150 @@ user = {
 
 
   constructor(
-    private taskService: TaskService,
-    private cdr: ChangeDetectorRef,
-    private router: Router
+    private taskService: TaskService,  //injecting the TaskService to make API calls
+    private cdr: ChangeDetectorRef,    //injecting ChangeDetectorRef to manually trigger change detection 
+    private router: Router             //navigate btwn pages
   ) {}
 
   ngOnInit(): void {
-
-    this.loadTasks();
+    this.loadTasks(); 
     this.loadStreak();
   }
 
-  loadTasks(): void {
+loadTasks(): void {
+  this.isLoading = true;
 
-    this.isLoading = true;
-
-    this.taskService.getTasks()
-      .subscribe({
-
-        next: (response: any) => {
-
-          this.tasks = response.data || [];
-          this.allTasks = [...this.tasks];
-
-          this.calculateProductivity();
-
-          this.isLoading = false;
-
-          this.cdr.detectChanges();
-        },
-
-        error: (error: any) => {
-
-          console.error(error);
-
-          this.isLoading = false;
-
-          this.cdr.detectChanges();
-        }
-      });
-  }
-
-  deleteTask(id: string): void {
-
-  const confirmDelete =
-    confirm('Are you sure you want to delete this task?');
-
-  if (!confirmDelete) {
-    return;
-  }
-
-  this.taskService
-    .deleteTask(id)
-    .subscribe({
-
-      next: () => {
-
-        this.tasks =
-          this.tasks.filter(
-            task => task.id !== id
-          );
-
-        this.calculateProductivity();
-
-        alert('Task deleted successfully');
-      },
-
-      error: (error: any) => {
-
-        console.error(error);
-
-        alert('Failed to delete task');
-      }
-    });
+  this.taskService.getTasks().subscribe({
+    next: (response: any) => {
+      this.tasks = response.data || [];
+      this.allTasks = [...this.tasks];
+      this.calculateProductivity();
+      this.isLoading = false;
+      this.cdr.detectChanges();
+    },
+    error: (error: any) => {
+      console.error(error);
+      this.isLoading = false;
+      this.cdr.detectChanges();
+    }
+  });
 }
+
+deleteTask(id: string): void {
+  const confirmDelete = confirm('Are you sure you want to delete this task?');
+
+  if (!confirmDelete) return;
+
+  this.taskService.deleteTask(id).subscribe({
+    next: () => {
+      this.tasks = this.tasks.filter(task => task.id !== id);
+      this.calculateProductivity();
+      alert('Task deleted successfully');
+    },
+    error: (error: any) => {
+      console.error(error);
+      alert('Failed to delete task');
+    }
+  });
+}
+// ui navigation methods
 editTask(id: string): void {
+  this.router.navigate(['/tasks/edit', id]);  // http://localhost:4200/tasks becomes http://localhost:4200/tasks/edit/123 when id=123
 
-  this.router.navigate(
-    ['/tasks/edit', id]
-  );
 }
-  navigateToCreateTask(): void {
+navigateToCreateTask(): void {
+this.router.navigate(['/tasks/create']);      // http://localhost:4200/tasks becomes http://localhost:4200/tasks/create
+}
 
-    this.router.navigate(['/tasks/create']);
-  }
+getPendingCount(): number {
+  return this.tasks.filter(t => t.status === 0).length;
+}
 
-  getPendingCount(): number {
+getInProgressCount(): number {
+  return this.tasks.filter(t => t.status === 1).length;
+}
 
-    return this.tasks.filter(
-      t => t.status === 0
-    ).length;
-  }
+getCompletedCount(): number {
+  return this.tasks.filter(t => t.status === 2).length;
+}
 
-  getInProgressCount(): number {
+getHighPriorityCount(): number {
+  return this.tasks.filter(t => t.priority === 2).length;
+}
 
-    return this.tasks.filter(
-      t => t.status === 1
-    ).length;
-  }
+getPriorityText(priority: number): string {
 
-  getCompletedCount(): number {
+  switch(priority) {
 
-    return this.tasks.filter(
-      t => t.status === 2
-    ).length;
-  }
+    case 0:
+      return 'Low';
 
-  getHighPriorityCount(): number {
+    case 1:
+      return 'Medium';
 
-    return this.tasks.filter(
-      t => t.priority === 2
-    ).length;
-  }
+    case 2:
+      return 'High';
 
-  getPriorityText(priority: number): string {
-
-    switch(priority) {
-
-      case 0:
-        return 'Low';
-
-      case 1:
-        return 'Medium';
-
-      case 2:
-        return 'High';
-
-      default:
-        return 'Unknown';
+    default:
+      return 'Unknown';
     }
   }
 
-  getStatusText(status: number): string {
+getStatusText(status: number): string {
 
-    switch(status) {
+  switch(status) {
 
-      case 0:
-        return 'Pending';
+    case 0:
+      return 'Pending';
 
-      case 1:
-        return 'In Progress';
+    case 1:
+      return 'In Progress';
 
-      case 2:
-        return 'Completed';
+    case 2:
+      return 'Completed';
 
-      default:
-        return 'Unknown';
+    default:
+      return 'Unknown';
     }
   }
 
-  logout(): void {
+logout(): void {
 
   localStorage.removeItem('token');
 
   this.router.navigate(['/login']);
 }
 
-  loadPendingTasks(): void {
+//Filter Methods
 
-  this.taskService.getPendingTasks()
-    .subscribe({
-
-      next: (response: any) => {
-
-        this.tasks = [...response.data];
-        this.cdr.detectChanges();
-      },
-
-      error: (error: any) => {
-
-        console.error(error);
-      }
-    });
+loadPendingTasks(): void {
+  this.taskService.getPendingTasks().subscribe({
+    next: (response: any) => {
+      this.tasks = [...response.data];
+      this.cdr.detectChanges();
+    },
+    error: (error: any) => { console.error(error); }
+  });
 }
 
 loadInProgressTasks(): void {
-
-  this.taskService.getInProgressTasks()
-    .subscribe({
-
-      next: (response: any) => {
-
-        this.tasks = [...response.data];
-        this.cdr.detectChanges();
-      },
-
-      error: (error: any) => {
-
-        console.error(error);
-      }
-    });
+ this.taskService.getInProgressTasks().subscribe({
+    next: (response: any) => {
+      this.tasks = [...response.data];
+      this.cdr.detectChanges();
+    },
+    error: (error: any) => { console.error(error); }
+  });
 }
 
 loadCompletedTasks(): void {
-
-  this.taskService.getCompletedTasks()
-    .subscribe({
-
-      next: (response: any) => {
-
-        this.tasks = [...response.data];
-        this.cdr.detectChanges();
-      },
-
-      error: (error: any) => {
-
-        console.error(error);
-      }
-    });
+ this.taskService.getCompletedTasks().subscribe({
+    next: (response: any) => {
+      this.tasks = [...response.data];
+      this.cdr.detectChanges();
+    },
+    error: (error: any) => { console.error(error); }
+  });
 }
 
 loadTasksByPriority(): void {
@@ -285,25 +215,14 @@ loadTasksByPriority(): void {
 }
 
 showAllTasks(): void {
-
-  this.tasks = [...this.allTasks];
+  this.tasks = [...this.allTasks];   //restores tasks from allTasks which is never filtered, so it always has the complete list of tasks from the API
 }
+
 showTodayTasks(): void {
-
-  const today =
-    new Date().toDateString();
-
-  this.tasks =
-    this.allTasks.filter(task => {
-
-      return (
-        new Date(task.createdAt)
-          .toDateString()
-        ===
-        today
-      );
-    });
-    
+  const today = new Date().toDateString();
+  this.tasks = this.allTasks.filter(task => {
+    return new Date(task.createdAt).toDateString() === today;
+  });
 }
 
 isOverdue(task: Task): boolean {
@@ -328,7 +247,7 @@ isDueToday(task: Task): boolean {
   return task.dueDate === today;
 }
 
-
+//Getter -auto recalculates when tasks, searchTerm, or selectedCategory changes and returns the filtered list of tasks to display 
 get filteredTasks(): Task[] {
   let result = this.tasks;
 
@@ -366,69 +285,38 @@ getCategoryClass(category: string | null): string {
 }
 
 private calculateProductivity(): void {
-
   const today = new Date();
-
   const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
 
-  yesterday.setDate(
-    yesterday.getDate() - 1
-  );
+  const todayTasks =this.tasks.filter(task => {
+    const createdDate =new Date(task.createdAt);
+    return (createdDate.toDateString() ===today.toDateString());
+  });
 
-  const todayTasks =
-    this.tasks.filter(task => {
+  const yesterdayTasks =this.tasks.filter(task => {
+    const createdDate =new Date(task.createdAt);
+    return (createdDate.toDateString() ===yesterday.toDateString());
+  });
 
-      const createdDate =
-        new Date(task.createdAt);
+  this.todayTotalTasks =todayTasks.length;
 
-      return (
-        createdDate.toDateString() ===
-        today.toDateString()
-      );
-    });
+  this.todayCompletedTasks =todayTasks.filter(t => t.status === 2).length;
 
-  const yesterdayTasks =
-    this.tasks.filter(task => {
+  this.yesterdayTotalTasks =yesterdayTasks.length;
 
-      const createdDate =
-        new Date(task.createdAt);
+  this.yesterdayCompletedTasks =yesterdayTasks.filter(t => t.status === 2).length;
 
-      return (
-        createdDate.toDateString() ===
-        yesterday.toDateString()
-      );
-    });
-
-  this.todayTotalTasks =
-    todayTasks.length;
-
-  this.todayCompletedTasks =
-    todayTasks.filter(
-      t => t.status === 2
-    ).length;
-
-  this.yesterdayTotalTasks =
-    yesterdayTasks.length;
-
-  this.yesterdayCompletedTasks =
-    yesterdayTasks.filter(
-      t => t.status === 2
-    ).length;
-
-  this.todayCompletionRate =
-    this.todayTotalTasks === 0
-      ? 0
-      : Math.round(
+  this.todayCompletionRate =this.todayTotalTasks === 0? 0
+    : Math.round(
           (
             this.todayCompletedTasks /
             this.todayTotalTasks
           ) * 100
         );
 
-  this.yesterdayCompletionRate =
-    this.yesterdayTotalTasks === 0
-      ? 0
-      : Math.round(
+  this.yesterdayCompletionRate =this.yesterdayTotalTasks === 0? 0
+    : Math.round(
           (
             this.yesterdayCompletedTasks /
             this.yesterdayTotalTasks
@@ -444,41 +332,26 @@ private calculateProductivity(): void {
       this.productivityDifference
     );
 }
+
+// Toggle task status between completed and pending when checkbox is clicked in the UI
 toggleTaskStatus(task: Task): void {
 
   const updatedTask = {
+    ...task,    //copy all fields first
+    status:      task.status === 2? 0: 2  //if currently completed(2), set to pending(0). If currently pending(0) or in progress(1), set to completed(2)
+  }; //all other fields preserved only status changes
 
-    ...task,
-
-    status:
-      task.status === 2
-        ? 0
-        : 2
-  };
-
-  this.taskService
-    .updateTask(task.id, updatedTask)
-    .subscribe({
-
-      next: () => {
-
-        task.status =
-          updatedTask.status;
-
-        this.calculateProductivity();
-
-        this.cdr.detectChanges();
+  this.taskService.updateTask(task.id, updatedTask).subscribe({
+    next: () => {
+      task.status =updatedTask.status;
+      this.calculateProductivity();
+      this.cdr.detectChanges();
       },
 
-      error: (error) => {
-
-        console.error(error);
-
-        alert(
-          'Failed to update task status'
-        );
-      }
-    });
+    error: (error) => {
+      console.error(error);
+      alert('Failed to update task status');
+    }});
 }
 
 getFormattedDueDateTime(task: Task): string {
@@ -531,16 +404,16 @@ get upcomingTasks(): Task[] {
   return this.allTasks
     .filter(task => {
       if (task.status === 2) return false; // Skip completed
-      if (!task.dueDate) return false;
-      return task.dueDate <= nextWeekStr || this.isOverdue(task);
+      if (!task.dueDate) return false; // Skip tasks without due dates
+      return task.dueDate <= nextWeekStr || this.isOverdue(task); // Show tasks due within the next week or overdue tasks
     })
     .sort((a, b) => {
       // Sort by due date first, then by time
-      if (a.dueDate !== b.dueDate) {
-        return a.dueDate!.localeCompare(b.dueDate!);
+      if (a.dueDate !== b.dueDate) { // If due dates are different, sort by due date
+        return a.dueDate!.localeCompare(b.dueDate!); //
       }
-      if (a.dueTime && b.dueTime) {
-        return a.dueTime.localeCompare(b.dueTime);
+      if (a.dueTime && b.dueTime) { // If due dates are the same and both have due times, sort by due time
+        return a.dueTime.localeCompare(b.dueTime); 
       }
       return 0;
     });

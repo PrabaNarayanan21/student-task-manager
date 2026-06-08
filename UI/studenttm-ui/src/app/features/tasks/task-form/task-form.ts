@@ -91,14 +91,10 @@ export class TaskForm implements OnInit {
   ) {}
 
   ngOnInit(): void {
-
-    this.taskId =
-      this.route.snapshot.paramMap.get('id') || '';
+    this.taskId =this.route.snapshot.paramMap.get('id') || '';
 
     if (this.taskId) {
-
       this.isEditMode = true;
-
       this.loadTask();
     }
   }
@@ -107,240 +103,119 @@ export class TaskForm implements OnInit {
 
   loadTask(): void {
 
-    this.taskService
-      .getTaskById(this.taskId)
-      .subscribe({
+    this.taskService.getTaskById(this.taskId).subscribe({
+      next: (response: any) => {
+        const task = response.data;
+        this.title = task.title;
+        this.description =task.description || '';
+        this.priority =task.priority;
+        this.status =task.status;
+        this.category = task.category || '';
+        this.dueDate = task.dueDate ; 
+        this.taskTime = task.dueTime ;
 
-        next: (response: any) => {
+        this.cdr.detectChanges();
+      },
 
-          const task = response.data;
-
-          this.title = task.title;
-
-          this.description =
-            task.description || '';
-
-          this.priority =
-            task.priority;
-
-          this.status =
-            task.status;
-          this.category = task.category || '';
-          if (task.dueDate) {
-
-            this.dueDate =
-              task.dueDate;
-          }
-
-          if (task.dueTime) {
-            this.taskTime = task.dueTime;
-          }
-
-          this.cdr.detectChanges();
-        },
-
-        error: (error: any) => {
-
-          console.error(error);
-
-          this.errorMessage =
-            'Failed to load task';
-        }
+      error: (error: any) => {
+        console.error(error);
+        this.errorMessage ='Failed to load task';
+      }
       });
   }
 
   // SUBMIT
 
   onSubmit(): void {
-
     this.errorMessage = '';
-
     // VALIDATION
-
     if (!this.title.trim()) {
-
-      this.errorMessage =
-        'Title is required';
-
+      this.errorMessage ='Title is required';
       return;
     }
 
     if (!this.dueDate) {
-  this.errorMessage = 'Due date is required';
-  return;
-}
-
-    if (this.title.length > 100) {
-
-      this.errorMessage =
-        'Title must be less than 100 characters';
-
+      this.errorMessage = 'Due date is required';
       return;
     }
 
-    this.isSubmitting = true;
+    if (this.title.length > 100) {
+      this.errorMessage ='Title must be less than 100 characters';
+      return;
+    }
 
-    // FORMAT DATE
-    let formattedDueDate: string | null = null;
-
-if (this.dueDate) {
-  formattedDueDate = this.dueDate;
-}
-
+    this.isSubmitting = true; 
+    
     // PAYLOAD
-
-    const payload = {
-
-      title: this.title.trim(),
-
-      description:
-        this.description.trim() || null,
-
+  const payload = {
+      title: this.title.trim(), //removes leading or trailing spaces
+      description: this.description.trim() || null,
       dueDate: this.dueDate || null,
       dueTime: this.taskTime || null,
-      priority: Number(this.priority),
-
+      priority: Number(this.priority), //converts to number
       status: Number(this.status),
       category: this.category || null
-    };
+};
 
     console.log('Submitting payload:', payload);
 
     // EDIT MODE
 
     if (this.isEditMode) {
-
-      this.taskService
-        .updateTask(
-          this.taskId,
-          payload
-        )
-        .subscribe({
-
-          next: (response: any) => {
-
-            console.log(
-              'TASK UPDATED:',
-              response
-            );
-
-            this.isSubmitting = false;
-
-            this.cdr.detectChanges();
-
-            alert(
-              'Task updated successfully'
-            );
-
-            this.router.navigate([
-              '/dashboard'
-            ]);
+      this.taskService.updateTask(this.taskId,payload).subscribe({
+        next: (response: any) => {
+          this.isSubmitting = false;
+          this.cdr.detectChanges();
+          alert('Task updated successfully');
+          this.router.navigate(['/dashboard']);
           },
 
-          error: (error: any) => {
-
-            console.error(
-              'UPDATE TASK ERROR:',
-              error
-            );
-
-            this.isSubmitting = false;
-
-            this.cdr.detectChanges();
-
-            this.errorMessage =
-              'Failed to update task';
+        error: (error: any) => {
+          this.isSubmitting = false;
+          this.cdr.detectChanges();
+          this.errorMessage = 'Failed to update task';
           }
         });
-
     }
 
     // CREATE MODE
 
     else {
-
-      this.taskService
-        .createTask(payload)
-        .subscribe({
-
-          next: (response: any) => {
-
-            console.log(
-              'TASK CREATED:',
-              response
-            );
-
-            this.isSubmitting = false;
-
-            this.cdr.detectChanges();
-
-            this.router.navigate([
-              '/dashboard'
-            ]);
-          },
-
-          error: (error: any) => {
-
-            console.error(
-              'CREATE TASK ERROR:',
-              error
-            );
-
-            this.isSubmitting = false;
-
-            this.cdr.detectChanges();
-
-            if (
-              error.error &&
-              error.error.message
-            ) {
-
-              this.errorMessage =
-                error.error.message;
-
-            } else if (
-              error.status === 400
-            ) {
-
-              this.errorMessage =
-                'Invalid task data';
-
-            } else if (
-              error.status === 401
-            ) {
-
-              this.errorMessage =
-                'You must login first';
-
-            } else {
-
-              this.errorMessage =
-                'Failed to create task';
-            }
-          }
-        });
+  this.taskService.createTask(payload).subscribe({
+    next: (response: any) => {
+      this.isSubmitting = false;
+      this.cdr.detectChanges();
+      this.router.navigate(['/dashboard']);
+    },
+    error: (error: any) => {
+      this.isSubmitting = false;
+      this.cdr.detectChanges();
+      if (error.error &&error.error.message) {
+        this.errorMessage =error.error.message;
+      } 
+      else if (error.status === 400) {
+        this.errorMessage ='Invalid task data';
+      } 
+      else if (error.status === 401) {
+        this.errorMessage ='You must login first';
+      } 
+      else {
+        this.errorMessage ='Failed to create task';
+      }
+      }
+    });
     }
   }
 
-  // RESET FORM
-
-  resetForm(): void {
-
-    this.title = '';
-
-    this.description = '';
-
-    this.dueDate = '';
-
-    this.priority = Priority.Low;
-
-    this.status =
-      TaskItemStatus.Pending;
-
-    this.taskTime = '';
-
-    this.category = '';
-
-    this.errorMessage = '';
-  }
+// RESET FORM
+resetForm(): void {
+  this.title = '';
+  this.description = '';
+  this.dueDate = '';
+  this.priority = Priority.Low;
+  this.status = TaskItemStatus.Pending;
+  this.taskTime = '';
+  this.category = '';
+  this.errorMessage = '';
+} 
 }
