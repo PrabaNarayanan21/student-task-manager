@@ -125,16 +125,32 @@ export class Calendar implements OnInit {
                     'July','August','September','October','November','December'];
     return `${months[this.currentMonth]} ${this.currentYear}`;
   }
+  isOverdue(task: Task): boolean {
+    if (task.status === 2) return false; // Completed tasks are not overdue
+    if (!task.dueDate) return false;
+    
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    
+    // If due date is in the past
+    if (task.dueDate < today) return true;
+    
+    // If due date is today AND due time has passed
+    if (task.dueDate === today && task.dueTime && task.dueTime < currentTime) return true;
+    
+    return false;
+  }
 
   getDotColor(task: Task): string {
-    if (task.status !== 2 && task.dueDate && new Date(task.dueDate) < new Date()) return '#ef4444';
+    if (this.isOverdue(task)) return '#ef4444';
     if (task.status === 2) return '#10b981';
     if (task.status === 1) return '#f59e0b';
     return '#6c63ff';
   }
 
   getTaskCardClass(task: any): string { //card background color
-    if (task.status !== 2 && task.dueDate && new Date(task.dueDate) < new Date()) return 'card-overdue';
+    if (this.isOverdue(task)) return 'card-overdue';
     if (task.status === 2) return 'card-completed';
     if (task.status === 1) return 'card-progress';
     return 'card-pending';
@@ -151,7 +167,7 @@ export class Calendar implements OnInit {
 
   getOverdueCount(): number {
     return this.getMonthTasks().filter(t =>
-      t.status !== 2 && new Date(t.dueDate) < new Date()
+      this.isOverdue(t)
     ).length;
   }
 
