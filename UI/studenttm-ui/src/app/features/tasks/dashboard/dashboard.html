@@ -3,13 +3,13 @@
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="logo-section">
-      <h2>StudentTM</h2>
+      <h2>Student<span style="color:#60A5FA">TM</span></h2>
     </div>
     <nav class="sidebar-menu">
       <a class="menu-item active">🏠 Dashboard</a>
       <a class="menu-item" routerLink="/tasks/create">➕ Create Task</a>
       <a class="menu-item" routerLink="/calendar">📅 Calendar</a>
-      <a class="menu-item logout" (click)="logout()">⏻ Logout</a>
+      <a class="menu-item logout" (click)="logout()">➡️ Logout</a>
     </nav>
   </aside>
 
@@ -80,7 +80,6 @@
           </div>
         </div>
 
-        <!-- ✅ UPDATED UPCOMING DEADLINES WIDGET -->
         <div class="deadlines-widget">
           <h2>🕐 Upcoming Deadlines</h2>
 
@@ -196,7 +195,7 @@
             <div class="task-footer">
               <small>
     📅 {{ task.dueDate }}
-    <span *ngIf="task.dueTime">⏰ {{ task.dueTime }}</span>
+    
   </small>
   <span *ngIf="task.category" class="cat-tag" [ngClass]="getCategoryClass(task.category)">
     {{ task.category }}

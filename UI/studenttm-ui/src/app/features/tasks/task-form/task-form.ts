@@ -101,7 +101,7 @@ export class TaskForm implements OnInit {
 
   // LOAD TASK FOR EDIT
 
-  loadTask(): void {
+  loadTask(): void {  //fetches that task from the backend and fills the form fields with its existing data so the user can see and modify them
 
     this.taskService.getTaskById(this.taskId).subscribe({
       next: (response: any) => {
@@ -143,11 +143,11 @@ export class TaskForm implements OnInit {
       this.errorMessage ='Title must be less than 100 characters';
       return;
     }
-
+ 
     this.isSubmitting = true; 
     
     // PAYLOAD
-  const payload = {
+  const payload = { //data that will be sent to the backend
       title: this.title.trim(), //removes leading or trailing spaces
       description: this.description.trim() || null,
       dueDate: this.dueDate || null,

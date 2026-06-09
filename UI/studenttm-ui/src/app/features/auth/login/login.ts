@@ -29,7 +29,7 @@ export class Login {
   };
 
   this.authService.login(request).subscribe({
-    next: () => {                           // ✅ no need to touch response here
+    next: () => {                           
       alert('Login Successful');
       this.router.navigate(['/dashboard']);
     },

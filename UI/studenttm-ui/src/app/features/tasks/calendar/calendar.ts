@@ -1,9 +1,8 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
 import { TaskService } from '../../../core/services/task';
-import { Router } from '@angular/router';
-
+import { RouterModule, Router } from '@angular/router';
+import { Task } from '../../../core/models/task.model';
 @Component({
   selector: 'app-calendar',
   standalone: true,
@@ -13,15 +12,15 @@ import { Router } from '@angular/router';
 })
 export class Calendar implements OnInit {
 
-  allTasks: any[] = [];
-  selectedDate: string | null = null;
-  selectedDateTasks: any[] = [];
-  calendarCells: any[] = [];
+  allTasks: Task[] = []; // store all tasks from API
+  selectedDate: string | null = null;  //stores the currently clicked date in YYYY-MM-DD format or null if nothing selected
+  selectedDateTasks: Task[] = []; //tasks for the clicked date - side panel 
+  calendarCells: any[] = []; //array of objects for each calendar cell with {day, dateStr, dots, isToday, isSelected} where dots is array of colors for task statuses
 
-  dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']; // header for the calendar grid
 
-  private currentYear = new Date().getFullYear();
-  private currentMonth = new Date().getMonth();
+  private currentYear = new Date().getFullYear(); // current year 
+  private currentMonth = new Date().getMonth(); // current month (0-11)
 
   constructor(
     private taskService: TaskService,
@@ -29,7 +28,7 @@ export class Calendar implements OnInit {
     private cdr: ChangeDetectorRef
   ) {}
 
-  ngOnInit(): void {
+  ngOnInit(): void { // load tasks and build calendar on init
     this.loadTasks();
   }
 
@@ -45,52 +44,52 @@ export class Calendar implements OnInit {
   }
 
   buildCalendar(): void {
-    const today = new Date();
+    const today = new Date(); 
     const firstDay = new Date(this.currentYear, this.currentMonth, 1).getDay();
     const daysInMonth = new Date(this.currentYear, this.currentMonth + 1, 0).getDate();
 
-    const cells: any[] = [];
+    const cells: any[] = []; 
 
     // Empty cells before first day
     for (let i = 0; i < firstDay; i++) {
       cells.push({ day: null });
     }
-
+    
     // Day cells
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = this.toDateStr(this.currentYear, this.currentMonth, d);
-      const dayTasks = this.getTasksForDate(dateStr);
+      const dayTasks = this.getTasksForDate(dateStr); // tasks array for this date
 
-      const dots = dayTasks.map(t => this.getDotColor(t));
+      const dots = dayTasks.map(t => this.getDotColor(t)); //converts each task to a color string
 
       cells.push({
         day: d,
         dateStr,
         dots,
-        isToday: today.getFullYear() === this.currentYear &&
-                 today.getMonth() === this.currentMonth &&
-                 today.getDate() === d,
-        isSelected: this.selectedDate === dateStr
+        isToday: today.getFullYear() === this.currentYear &&  //same year
+                 today.getMonth() === this.currentMonth &&    //same month
+                 today.getDate() === d,                       //same day
+        isSelected: this.selectedDate === dateStr             //is this currently selected date?
       });
     }
 
     this.calendarCells = cells;
   }
 
-  selectDate(cell: any): void {
-    this.selectedDate = cell.dateStr;
+  selectDate(cell: any): void {  //called when user clicks a date cell
+    this.selectedDate = cell.dateStr; 
     this.selectedDateTasks = this.getTasksForDate(cell.dateStr);
-    this.buildCalendar();
+    this.buildCalendar(); 
     this.cdr.detectChanges();
   }
 
-  getTasksForDate(dateStr: string): any[] {
+  getTasksForDate(dateStr: string): Task[] {
     return this.allTasks.filter(t => {
-      if (!t.dueDate) return false;
-      return new Date(t.dueDate).toISOString().split('T')[0] === dateStr;
+      if (!t.dueDate) return false; // ignore tasks without due date
+      return new Date(t.dueDate).toISOString().split('T')[0] === dateStr; //compare dates
     });
   }
-
+  
   toDateStr(year: number, month: number, day: number): string {
     const m = String(month + 1).padStart(2, '0');
     const d = String(day).padStart(2, '0');
@@ -98,11 +97,11 @@ export class Calendar implements OnInit {
   }
 
   prevMonth(): void {
-    if (this.currentMonth === 0) {
-      this.currentMonth = 11;
-      this.currentYear--;
+    if (this.currentMonth === 0) { //Jan
+      this.currentMonth = 11;      //Dec
+      this.currentYear--;          //go back one year
     } else {
-      this.currentMonth--;
+      this.currentMonth--;         //go back one month
     }
     this.selectedDate = null;
     this.selectedDateTasks = [];
@@ -110,11 +109,11 @@ export class Calendar implements OnInit {
   }
 
   nextMonth(): void {
-    if (this.currentMonth === 11) {
-      this.currentMonth = 0;
-      this.currentYear++;
+    if (this.currentMonth === 11) { //Dec
+      this.currentMonth = 0;        //Jan
+      this.currentYear++;           //go forward one year
     } else {
-      this.currentMonth++;
+      this.currentMonth++;          //go forward one month
     }
     this.selectedDate = null;
     this.selectedDateTasks = [];
@@ -127,29 +126,28 @@ export class Calendar implements OnInit {
     return `${months[this.currentMonth]} ${this.currentYear}`;
   }
 
-  getDotColor(task: any): string {
+  getDotColor(task: Task): string {
     if (task.status !== 2 && task.dueDate && new Date(task.dueDate) < new Date()) return '#ef4444';
     if (task.status === 2) return '#10b981';
     if (task.status === 1) return '#f59e0b';
     return '#6c63ff';
   }
 
-  getTaskCardClass(task: any): string {
+  getTaskCardClass(task: any): string { //card background color
     if (task.status !== 2 && task.dueDate && new Date(task.dueDate) < new Date()) return 'card-overdue';
     if (task.status === 2) return 'card-completed';
     if (task.status === 1) return 'card-progress';
     return 'card-pending';
   }
 
-  // ✅ New — filters by currently viewed month
-getMonthTasks(): any[] {
+  getMonthTasks(): any[] {
   return this.allTasks.filter(t => {
-    if (!t.dueDate) return false;
-    const d = new Date(t.dueDate);
+    if (!t.dueDate) return false; //task without a duedate cannot belong to a month
+    const d = new Date(t.dueDate); 
     return d.getFullYear() === this.currentYear &&
            d.getMonth() === this.currentMonth;
   });
-}
+} 
 
   getOverdueCount(): number {
     return this.getMonthTasks().filter(t =>
@@ -165,7 +163,7 @@ getMonthTasks(): any[] {
     return this.getMonthTasks().filter(t => t.status === 0).length;
   }
   
-  getStatusText(status: number): string {
+  getStatusText(status: number): string {  //status label
     switch(status) {
       case 0: return 'Pending';
       case 1: return 'In Progress';
@@ -174,7 +172,7 @@ getMonthTasks(): any[] {
     }
   }
 
-  getStatusClass(status: number): string {
+  getStatusClass(status: number): string {  //status text color
     switch(status) {
       case 0: return 'pending-status';
       case 1: return 'progress-status';
@@ -187,4 +185,5 @@ getMonthTasks(): any[] {
     localStorage.removeItem('token');
     this.router.navigate(['/login']);
   }
+  
 }

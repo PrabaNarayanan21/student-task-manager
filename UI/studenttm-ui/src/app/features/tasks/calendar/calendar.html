@@ -1,12 +1,14 @@
 <div class="dashboard-container">
 
   <aside class="sidebar">
-    <div class="logo-section"><h2>StudentTM</h2></div>
+    <div class="logo-section">
+      <h2>Student<span style="color:#60A5FA">TM</span></h2>
+    </div>
     <nav class="sidebar-menu">
       <a class="menu-item" routerLink="/dashboard">🏠 Dashboard</a>
       <a class="menu-item" routerLink="/tasks/create">➕ Create Task</a>
       <a class="menu-item active" routerLink="/calendar">📅 Calendar</a>
-      <a class="menu-item logout" (click)="logout()">【⏻】Logout</a>
+      <a class="menu-item logout" (click)="logout()">➡️ Logout</a>
     </nav>
   </aside>
 
@@ -97,7 +99,10 @@
             class="task-item"
             [ngClass]="getTaskCardClass(task)">
 
-            <div class="task-time">{{ task.dueDate | date:'shortTime' }}</div>
+            <div class="task-time"> 
+              <span *ngIf="task.dueTime">{{ task.dueDate }} @ {{ task.dueTime }}</span>
+              <span *ngIf="!task.dueTime">{{ task.dueDate }}</span>
+            </div>
             <div class="task-item-title">{{ task.title }}</div>
             <span class="status-badge" [ngClass]="getStatusClass(task.status)">
               {{ getStatusText(task.status) }}

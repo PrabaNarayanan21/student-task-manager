@@ -89,6 +89,7 @@ deleteTask(id: string): void {
       this.tasks = this.tasks.filter(task => task.id !== id);
       this.calculateProductivity();
       alert('Task deleted successfully');
+      this.router.navigate(['/dashboard']);
     },
     error: (error: any) => {
       console.error(error);
@@ -361,7 +362,7 @@ getFormattedDueDateTime(task: Task): string {
     return `${task.dueDate} at ${task.dueTime}`;
   }
   return task.dueDate;
-}
+} 
 getDeadlineLabel(task: Task): string {
   if (!task.dueDate) return 'No deadline';
   
@@ -378,7 +379,7 @@ getDeadlineLabel(task: Task): string {
   
   if (task.dueDate === today) {
     if (task.dueTime) {
-      return `Due today at ${task.dueTime}`;
+      return `Due today`;
     }
     return 'Due today';
   }
@@ -415,7 +416,7 @@ get upcomingTasks(): Task[] {
       if (a.dueTime && b.dueTime) { // If due dates are the same and both have due times, sort by due time
         return a.dueTime.localeCompare(b.dueTime); 
       }
-      return 0;
+      return 0; 
     });
 }
 
