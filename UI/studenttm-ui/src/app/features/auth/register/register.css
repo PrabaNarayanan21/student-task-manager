@@ -1,0 +1,124 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+.auth-tagline {
+  font-size: 13px;
+  color: #60A5FA;
+  font-weight: 500;
+  margin-bottom: 16px;
+  letter-spacing: 0.3px;
+}
+.auth-page {
+  min-height: 100vh;
+  background: #EFF6FF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.auth-card {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #DBEAFE;
+  box-shadow: 0 4px 20px rgba(37,99,235,0.08);
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 420px;
+}
+
+/* LOGO */
+.auth-logo {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1E3A8A;
+  margin-bottom: 20px;
+}
+
+.auth-logo span { color: #60A5FA; }
+
+/* HEADING */
+.auth-card h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1E3A8A;
+  margin-bottom: 6px;
+}
+
+.auth-subtitle {
+  font-size: 14px;
+  color: #6B7280;
+  margin-bottom: 28px;
+}
+
+/* FORM GROUPS */
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1E3A8A;
+  margin-bottom: 7px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 15px;
+  border: 1.5px solid #BFDBFE;
+  border-radius: 8px;
+  color: #1E3A8A;
+  background: #EFF6FF;
+  outline: none;
+  font-family: inherit;
+  transition: 0.15s;
+}
+
+.form-group input:focus {
+  border-color: #2563EB;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+
+.form-group input::placeholder {
+  color: #9CA3AF;
+}
+
+/* BUTTON */
+.btn-primary {
+  width: 100%;
+  padding: 12px;
+  background: #2563EB;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+  margin-top: 8px;
+  font-family: inherit;
+}
+
+.btn-primary:hover { background: #1D4ED8; }
+
+/* LINK */
+.auth-link {
+  text-align: center;
+  font-size: 14px;
+  color: #6B7280;
+  margin-top: 20px;
+}
+
+.auth-link a {
+  color: #2563EB;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-link a:hover { text-decoration: underline; }

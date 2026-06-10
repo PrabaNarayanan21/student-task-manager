@@ -11,7 +11,7 @@ import { Task } from '../models/task.model';
 import { ApiResponse } from '../models/api-response.model';
 
 @Injectable({ 
-  providedIn: 'root'
+  providedIn: 'root' //registers with angular's dependency injection system so it can be injected into components
 })
 export class TaskService {
 

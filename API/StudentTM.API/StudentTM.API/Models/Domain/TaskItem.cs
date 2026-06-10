@@ -31,8 +31,7 @@ namespace StudentTM.API.Models.Domain
         // Foreign Key
         public Guid UserId { get; set; }
 
-        // Navigation Property
-        public User User { get; set; }
+        
     }
 }
 

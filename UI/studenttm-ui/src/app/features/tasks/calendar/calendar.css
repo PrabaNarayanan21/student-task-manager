@@ -11,7 +11,7 @@ body {
   background-color: #EFF6FF;
 }
 
-/* SIDEBAR */
+/* SIDEBAR — same as dashboard */
 .sidebar {
   width: 250px;
   background-color: #0F172A;
@@ -25,10 +25,6 @@ body {
   margin-bottom: 50px;
   font-size: 22px;
   letter-spacing: 0.5px;
-}
-
-.logo-section h2 span {
-  color: #60A5FA;
 }
 
 .sidebar-menu {
@@ -53,30 +49,20 @@ body {
   color: #fff;
 }
 
-.active {
-  background-color: #2563EB;
-  color: #fff;
-}
+.active { background-color: #2563EB; color: #fff; }
 
-.logout {
-  margin-top: 30px;
-  color: rgba(255,255,255,0.35);
-}
+.logout { margin-top: 30px; color: rgba(255,255,255,0.35); }
+.logout:hover { background-color: rgba(239,68,68,0.15); color: #FCA5A5; }
 
-.logout:hover {
-  background-color: rgba(239,68,68,0.15);
-  color: #FCA5A5;
-}
-
-  
-
-
+/* MAIN */
 .main-content { flex: 1; padding: 30px; }
 
+/* HEADER */
 .cal-page-header { margin-bottom: 24px; }
-.cal-page-header h1 { font-size: 28px; font-weight: 600; color: #111827; }
-.cal-page-header p { color: #6b7280; margin-top: 5px; }
+.cal-page-header h1 { font-size: 26px; font-weight: 700; color: #1E3A8A; }
+.cal-page-header p  { color: #6B7280; margin-top: 5px; }
 
+/* LAYOUT */
 .cal-layout {
   display: grid;
   grid-template-columns: 1fr 280px;
@@ -86,13 +72,14 @@ body {
 
 /* CALENDAR WRAPPER */
 .cal-wrapper {
-  background: white;
-  border-radius: 20px;
+  background: #fff;
+  border-radius: 16px;
   padding: 20px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+  border: 1px solid #DBEAFE;
+  box-shadow: 0 2px 8px rgba(37,99,235,0.06);
 }
 
-/* SUMMARY */
+/* SUMMARY CARDS */
 .summary-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -101,17 +88,18 @@ body {
 }
 
 .sum-card {
-  background: #f9fafb;
+  background: #EFF6FF;
   border-radius: 12px;
   padding: 10px;
   text-align: center;
+  border: 1px solid #DBEAFE;
 }
 
-.sum-num { font-size: 22px; font-weight: 700; color: #111827; }
-.sum-lbl { font-size: 11px; color: #6b7280; margin-top: 2px; }
-.overdue-num { color: #ef4444; }
-.done-num { color: #10b981; }
-.pending-num { color: #6c63ff; }
+.sum-num     { font-size: 22px; font-weight: 700; color: #1E3A8A; }
+.sum-lbl     { font-size: 11px; color: #6B7280; margin-top: 2px; }
+.overdue-num { color: #EF4444; }
+.done-num    { color: #10B981; }
+.pending-num { color: #2563EB; }
 
 /* LEGEND */
 .legend {
@@ -126,7 +114,7 @@ body {
   align-items: center;
   gap: 5px;
   font-size: 12px;
-  color: #6b7280;
+  color: #6B7280;
 }
 
 .leg-dot {
@@ -144,23 +132,24 @@ body {
   margin-bottom: 12px;
 }
 
-.month-title { font-size: 16px; font-weight: 600; color: #111827; }
+.month-title { font-size: 16px; font-weight: 700; color: #1E3A8A; }
 
 .nav-btn {
-  background: #f3f4f6;
-  border: none;
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
   border-radius: 8px;
   width: 32px;
   height: 32px;
   font-size: 20px;
   cursor: pointer;
-  color: #374151;
+  color: #2563EB;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: 0.2s;
 }
 
-.nav-btn:hover { background: #e5e7eb; }
+.nav-btn:hover { background: #DBEAFE; }
 
 /* DAY LABELS */
 .day-labels {
@@ -174,7 +163,7 @@ body {
   text-align: center;
   font-size: 12px;
   font-weight: 600;
-  color: #6c63ff;
+  color: #2563EB;
   padding: 4px 0;
 }
 
@@ -188,55 +177,51 @@ body {
 .cal-cell {
   min-height: 60px;
   border-radius: 10px;
-  border: 1px solid #e5e7eb;
-  background: white;
+  border: 1px solid #DBEAFE;
+  background: #fff;
   padding: 6px;
   cursor: pointer;
   transition: 0.2s;
 }
 
-.cal-cell:hover { background: #f3f4f6; }
-.cal-cell.empty { background: transparent; border-color: transparent; cursor: default; }
-.cal-cell.today { border: 2px solid #6c63ff; }
-.cal-cell.selected { background: #eef2ff; border-color: #6c63ff; }
+.cal-cell:hover   { background: #EFF6FF; }
+.cal-cell.empty   { background: transparent; border-color: transparent; cursor: default; }
+.cal-cell.today   { border: 2px solid #2563EB; }
+.cal-cell.selected { background: #DBEAFE; border-color: #2563EB; }
 
 .day-num {
   font-size: 13px;
   font-weight: 500;
-  color: #374151;
+  color: #1E3A8A;
   display: block;
   margin-bottom: 4px;
 }
 
-.today .day-num { color: #6c63ff; }
+.today .day-num { color: #2563EB; font-weight: 700; }
 
 .dots { display: flex; flex-wrap: wrap; gap: 3px; }
-
-.dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-}
+.dot  { width: 7px; height: 7px; border-radius: 50%; }
 
 /* TASK PANEL */
 .task-list-panel {
-  background: white;
-  border-radius: 20px;
+  background: #fff;
+  border-radius: 16px;
   padding: 20px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+  border: 1px solid #DBEAFE;
+  box-shadow: 0 2px 8px rgba(37,99,235,0.06);
   min-height: 300px;
 }
 
 .task-list-panel h3 {
   font-size: 15px;
-  font-weight: 600;
-  color: #111827;
+  font-weight: 700;
+  color: #1E3A8A;
   margin-bottom: 14px;
 }
 
 .no-date-selected p,
 .no-tasks {
-  color: #9ca3af;
+  color: #9CA3AF;
   font-size: 13px;
   text-align: center;
   margin-top: 40px;
@@ -244,22 +229,22 @@ body {
 
 /* TASK CARDS */
 .task-item {
-  border-radius: 10px;
+  border-radius: 0;
   padding: 12px;
   margin-bottom: 10px;
 }
 
-.card-overdue   { background: #fff5f5; border-left: 4px solid #ef4444; }
-.card-completed { background: #f0fdf4; border-left: 4px solid #10b981; }
-.card-progress  { background: #fffbeb; border-left: 4px solid #f59e0b; }
-.card-pending   { background: #f5f3ff; border-left: 4px solid #6c63ff; }
+.card-overdue   { background: #FFF5F5; border-left: 3px solid #EF4444; }
+.card-completed { background: #F0FDF4; border-left: 3px solid #10B981; }
+.card-progress  { background: #FFFBEB; border-left: 3px solid #F59E0B; }
+.card-pending   { background: #EFF6FF; border-left: 3px solid #2563EB; }
 
-.task-time { font-size: 11px; color: #9ca3af; margin-bottom: 3px; }
+.task-time { font-size: 11px; color: #9CA3AF; margin-bottom: 3px; }
 
 .task-item-title {
   font-size: 13px;
   font-weight: 600;
-  color: #111827;
+  color: #1E3A8A;
   margin-bottom: 6px;
 }
 
@@ -270,6 +255,6 @@ body {
   font-weight: 500;
 }
 
-.pending-status   { background: #fef3c7; color: #92400e; }
-.progress-status  { background: #dbeafe; color: #1e40af; }
-.completed-status { background: #d1fae5; color: #065f46; }
+.pending-status   { background: #FEF3C7; color: #D97706; }
+.progress-status  { background: #DBEAFE; color: #2563EB; }
+.completed-status { background: #DCFCE7; color: #16A34A; }

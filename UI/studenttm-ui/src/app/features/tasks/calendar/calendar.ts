@@ -158,7 +158,7 @@ export class Calendar implements OnInit {
 
   getMonthTasks(): any[] {
   return this.allTasks.filter(t => {
-    if (!t.dueDate) return false; //task without a duedate cannot belong to a month
+    if (!t.dueDate) return false;    //task without a duedate cannot belong to a month
     const d = new Date(t.dueDate); 
     return d.getFullYear() === this.currentYear &&
            d.getMonth() === this.currentMonth;

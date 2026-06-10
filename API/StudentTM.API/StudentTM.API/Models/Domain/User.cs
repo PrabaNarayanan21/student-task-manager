@@ -19,7 +19,6 @@ namespace StudentTM.API.Models.Domain
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        // Navigation Property
-        public ICollection<TaskItem> Tasks { get; set; } = new List<TaskItem>();
+        
     }
 }
