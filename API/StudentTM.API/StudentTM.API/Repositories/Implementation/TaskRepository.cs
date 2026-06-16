@@ -15,9 +15,6 @@ namespace StudentTM.API.Repositories.Implementation
             this.configuration = configuration;
         }
 
-        
-        
-
         public async Task<bool> CreateTaskAsync(TaskItem task)
         {
             var connectionString =

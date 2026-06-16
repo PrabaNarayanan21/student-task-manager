@@ -417,7 +417,7 @@ namespace StudentTM.API.Controllers
 
             var streak = await taskRepository.GetStreakAsync(Guid.Parse(userId));
 
-            return Ok(new ApiResponseDto
+            return Ok(new ApiResponseDto 
             {
                 Success = true,
                 Message = "Streak fetched successfully.",

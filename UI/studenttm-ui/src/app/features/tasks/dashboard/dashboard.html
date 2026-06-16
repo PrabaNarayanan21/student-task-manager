@@ -1,6 +1,27 @@
 <div class="dashboard-container">
 
-  <!-- SIDEBAR -->
+  <app-confirm-dialog
+    [isVisible]="showLogoutDialog"
+    [title]="'Confirm Logout'"
+    [message]="'Are you sure you want to logout?'"
+    [confirmText]="'Yes, Logout'"
+    [cancelText]="'Stay'"
+    [type]="'warning'"
+    (confirmed)="onLogoutConfirmed()"
+    (cancelled)="onLogoutCancelled()">
+  </app-confirm-dialog>
+
+   <app-confirm-dialog
+    [isVisible]="showDeleteDialog"
+    [title]="'Delete Task'"
+    [message]="'Are you sure you want to delete this task? This cannot be undone.'"
+    [confirmText]="'Yes, Delete'"
+    [cancelText]="'Cancel'"
+    [type]="'danger'"
+    (confirmed)="onDeleteConfirmed()"
+    (cancelled)="onDeleteCancelled()">
+  </app-confirm-dialog>
+
   <aside class="sidebar">
     <div class="logo-section">
       <h2>Student<span style="color:#60A5FA">TM</span></h2>
@@ -13,24 +34,20 @@
     </nav>
   </aside>
 
-  <!-- MAIN CONTENT -->
   <main class="main-content">
 
-    <!-- HEADER -->
     <div class="dashboard-header">
       <div>
         <h1>Welcome Back, {{ user.name }} 👋</h1>
-        <p>Manage your daily tasks efficiently</p>
+        <p>Manage your daily tasks efficiently</p> 
       </div>
       <div class="user-badge">
         {{ user.name.charAt(0).toUpperCase() }}
       </div>
     </div>
 
-    <!-- CONTENT -->
     <div class="dashboard-body">
 
-      <!-- SUMMARY CARDS -->
       <div class="summary-grid">
         <div class="summary-card total">
           <h3>Total Tasks</h3>
@@ -55,7 +72,6 @@
         </div>
       </div>
 
-      <!-- PRODUCTIVITY OVERVIEW -->
       <div class="overview-row">
         <div class="productivity-card">
           <h2>📊 Productivity Overview</h2>
@@ -94,7 +110,7 @@
               <p class="dl-name">{{ task.title }}</p>
               <p class="dl-meta">
                 📅 {{ getDeadlineLabel(task) }} 
-                <span *ngIf="task.dueTime">⏰ at {{ task.dueTime }}</span>
+                <span *ngIf="task.dueTime"> at {{ task.dueTime }}</span>
                 · {{ task.category || 'General' }}
               </p>
             </div>
@@ -110,7 +126,6 @@
         </div>
       </div>
       
-      <!-- TASK SECTION -->
       <div class="tasks-section">
         <div class="section-header">
           <div class="section-header-top">
@@ -123,12 +138,12 @@
           <input class="search-input" type="text" [(ngModel)]="searchTerm" placeholder="Search by title or description..." />
 
           <div class="filter-buttons">
-            <button (click)="showAllTasks()">All</button>
-            <button (click)="showTodayTasks()">Today</button>
-            <button (click)="loadPendingTasks()">Pending</button>
-            <button (click)="loadInProgressTasks()">In Progress</button>
-            <button (click)="loadCompletedTasks()">Completed</button>
-            <button (click)="loadTasksByPriority()">Sort By Priority</button>
+            <button (click)="showAllTasks()" [class.active]="selectedMainFilter === 'all'">All</button>
+            <button (click)="showTodayTasks()" [class.active]="selectedMainFilter === 'today'">Today</button>
+            <button (click)="loadPendingTasks()" [class.active]="selectedMainFilter === 'pending'">Pending</button>
+            <button (click)="loadInProgressTasks()" [class.active]="selectedMainFilter === 'in-progress'">In Progress</button>
+            <button (click)="loadCompletedTasks()" [class.active]="selectedMainFilter === 'completed'">Completed</button>
+            <button (click)="loadTasksByPriority()" [class.active]="selectedMainFilter === 'priority'">Sort By Priority</button>
           </div>
 
           <div class="category-filters">
@@ -139,12 +154,10 @@
           </div>
         </div>
 
-        <!-- EMPTY STATE -->
         <div *ngIf="filteredTasks.length === 0" class="empty-state">
           No tasks available.
         </div>
 
-        <!-- TASK GRID -->
         <div *ngIf="filteredTasks.length > 0" class="task-grid">
           <div *ngFor="let task of filteredTasks" class="task-card" [ngClass]="{
             'overdue-task': task.status !== 2 && isOverdue(task),
@@ -171,14 +184,11 @@
               </div>
             </div>
 
-            <!-- DESCRIPTION -->
             <p class="task-description">
               {{ task.description || 'No description available' }}
             </p>
 
-            <!-- STATUS ROW -->
             <div class="status-row">
-              <!-- ✅ UPDATED: Pass task object to isOverdue -->
               <div *ngIf="task.status !== 2 && isOverdue(task)" class="overdue-label">
                 ⚠ Overdue
               </div>
@@ -191,15 +201,14 @@
               </span>
             </div>
 
-            <!-- FOOTER -->
             <div class="task-footer">
               <small>
-    📅 {{ task.dueDate }}
+            📅 {{ task.dueDate }}
     
-  </small>
-  <span *ngIf="task.category" class="cat-tag" [ngClass]="getCategoryClass(task.category)">
-    {{ task.category }}
-  </span>
+            </small>
+            <span *ngIf="task.category" class="cat-tag" [ngClass]="getCategoryClass(task.category)">
+              {{ task.category }}
+            </span>
             </div>
           </div>
         </div>

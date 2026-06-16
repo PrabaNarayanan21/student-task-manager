@@ -1,439 +1,470 @@
-import { Component,OnInit,ChangeDetectorRef } from '@angular/core';
-
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
 import { RouterModule, Router } from '@angular/router';
-
 import { TaskService } from '../../../core/services/task';
-
 import { Task } from '../../../core/models/task.model';
-
 import { FormsModule } from '@angular/forms';
+import { ToastrService } from 'ngx-toastr';
+import { Subject, of } from 'rxjs';
+import { finalize, catchError, tap, switchMap } from 'rxjs/operators';
+import { ConfirmDialog } from '../../../shared/confirm-dialog/confirm-dialog';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule,FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule,ConfirmDialog], //ConfirmDialog ->importing the child component
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']
 })
-export class Dashboard implements OnInit {
-  user = { name: localStorage.getItem('username') || 'User'};
-  tasks: Task[] = []; //currently displayed tasks - change when filters applied
-  allTasks: Task[] = []; //a permanent copy of all tasks from API - never filtered, used to reset filters and apply new ones
-  isLoading = true; //starts as true to show loading spinner until API response is received
-  today: Date = new Date(); //current date - used for overdue and due today calculations
-  searchTerm: string = ''; //bound to search input via [(ngModel)]
-  selectedCategory: string = 'all'; //default to show all categories
+export class Dashboard implements OnInit, OnDestroy {
+  user = { name: localStorage.getItem('username') || 'User' };
+  tasks: Task[] = [];
+  allTasks: Task[] = [];
+  isLoading = true;
+  today: Date = new Date();
+  searchTerm: string = '';
+  selectedCategory: string = 'all';
+  selectedMainFilter: string = 'all';
 
-  categoryOptions = [
-    'Assignment',
-    'Exam',
-    'Personal',
-    'Project',
-    'Other'
-  ]; //for filter dropdown - can be expanded in the future
+  categoryOptions = ['Assignment', 'Exam', 'Personal', 'Project', 'Other'];
 
-  // Productivity tracking variables
   todayTotalTasks = 0;
   todayCompletedTasks = 0;
   todayCompletionRate = 0;
-
   yesterdayTotalTasks = 0;
   yesterdayCompletedTasks = 0;
   yesterdayCompletionRate = 0;
-
   productivityDifference = 0;
   absoluteDifference = 0;
-
   streakCount: number = 0;
 
+  private destroy$ = new Subject<void>();
+ 
+  showLogoutDialog = false;
+  showDeleteDialog = false;
+  taskToDelete: string = '';
 
   constructor(
-    private taskService: TaskService,  //injecting the TaskService to make API calls
-    private cdr: ChangeDetectorRef,    //injecting ChangeDetectorRef to manually trigger change detection 
-    private router: Router             //navigate btwn pages
+    private taskService: TaskService,
+    private cdr: ChangeDetectorRef,
+    private router: Router,
+    private toastr: ToastrService
   ) {}
 
   ngOnInit(): void {
-    this.loadTasks(); 
+    this.loadTasks();
     this.loadStreak();
   }
 
-loadTasks(): void {
-  this.isLoading = true;
-
-  this.taskService.getTasks().subscribe({
-    next: (response: any) => {
-      this.tasks = response.data || [];
-      this.allTasks = [...this.tasks];
-      this.calculateProductivity();
-      this.isLoading = false;
-      this.cdr.detectChanges();
-    },
-    error: (error: any) => {
-      console.error(error);
-      this.isLoading = false;
-      this.cdr.detectChanges();
-    }
-  });
-}
-
-deleteTask(id: string): void {
-  const confirmDelete = confirm('Are you sure you want to delete this task?');
-
-  if (!confirmDelete) return;
-
-  this.taskService.deleteTask(id).subscribe({
-    next: () => {
-      this.tasks = this.tasks.filter(task => task.id !== id);
-      this.calculateProductivity();
-      alert('Task deleted successfully');
-      this.router.navigate(['/dashboard']);
-    },
-    error: (error: any) => {
-      console.error(error);
-      alert('Failed to delete task');
-    }
-  });
-}
-// ui navigation methods
-editTask(id: string): void {
-  this.router.navigate(['/tasks/edit', id]);  // http://localhost:4200/tasks becomes http://localhost:4200/tasks/edit/123 when id=123
-
-}
-navigateToCreateTask(): void {
-this.router.navigate(['/tasks/create']);      // http://localhost:4200/tasks becomes http://localhost:4200/tasks/create
-}
-
-getPendingCount(): number {
-  return this.tasks.filter(t => t.status === 0).length;
-}
-
-getInProgressCount(): number {
-  return this.tasks.filter(t => t.status === 1).length;
-}
-
-getCompletedCount(): number {
-  return this.tasks.filter(t => t.status === 2).length;
-}
-
-getHighPriorityCount(): number {
-  return this.tasks.filter(t => t.priority === 2).length;
-}
-
-getPriorityText(priority: number): string {
-
-  switch(priority) {
-
-    case 0:
-      return 'Low';
-
-    case 1:
-      return 'Medium';
-
-    case 2:
-      return 'High';
-
-    default:
-      return 'Unknown';
-    }
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-getStatusText(status: number): string {
+  loadTasks(): void {
+    this.isLoading = true;
 
-  switch(status) {
-
-    case 0:
-      return 'Pending';
-
-    case 1:
-      return 'In Progress';
-
-    case 2:
-      return 'Completed';
-
-    default:
-      return 'Unknown';
-    }
+    this.taskService.getTasks()
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        }),
+        catchError((error) => {
+          console.error('Error loading tasks:', error);
+          this.toastr.error('Failed to load tasks');
+          return of([]);
+        })
+      )
+      .subscribe(tasks => {
+        this.tasks = tasks;
+        this.allTasks = [...tasks];
+        this.calculateProductivity();
+        this.cdr.detectChanges();
+      });
+  }
+  
+  deleteTask(id: string): void {
+    this.taskToDelete = id;        
+    this.showDeleteDialog = true;  
   }
 
-logout(): void {
+  onDeleteConfirmed(): void {
+    this.showDeleteDialog = false;
 
-  localStorage.removeItem('token');
-
-  this.router.navigate(['/login']);
-}
-
-//Filter Methods
-
-loadPendingTasks(): void {
-  this.taskService.getPendingTasks().subscribe({
-    next: (response: any) => {
-      this.tasks = [...response.data];
-      this.cdr.detectChanges();
-    },
-    error: (error: any) => { console.error(error); }
-  });
-}
-
-loadInProgressTasks(): void {
- this.taskService.getInProgressTasks().subscribe({
-    next: (response: any) => {
-      this.tasks = [...response.data];
-      this.cdr.detectChanges();
-    },
-    error: (error: any) => { console.error(error); }
-  });
-}
-
-loadCompletedTasks(): void {
- this.taskService.getCompletedTasks().subscribe({
-    next: (response: any) => {
-      this.tasks = [...response.data];
-      this.cdr.detectChanges();
-    },
-    error: (error: any) => { console.error(error); }
-  });
-}
-
-loadTasksByPriority(): void {
-
-  this.taskService.getTasksSortedByPriority()
-    .subscribe({
-
-      next: (response: any) => {
-
-        this.tasks = [...response.data];
-        this.cdr.detectChanges(); 
+    this.taskService.deleteTask(this.taskToDelete).subscribe({
+      next: () => {
+        this.tasks = this.tasks.filter(t => t.id !== this.taskToDelete);
+        this.allTasks = this.allTasks.filter(t => t.id !== this.taskToDelete);
+        this.calculateProductivity();
+        this.toastr.success('Task deleted successfully');
+        this.cdr.detectChanges();
       },
-
-      error: (error: any) => {
-
-        console.error(error);
+      error: () => {
+        this.toastr.error('Failed to delete task');
       }
     });
-}
-
-showAllTasks(): void {
-  this.tasks = [...this.allTasks];   //restores tasks from allTasks which is never filtered, so it always has the complete list of tasks from the API
-}
-
-showTodayTasks(): void {
-  const today = new Date().toDateString();
-  this.tasks = this.allTasks.filter(task => {
-    return new Date(task.createdAt).toDateString() === today;
-  });
-}
-
-isOverdue(task: Task): boolean {
-  if (!task.dueDate) return false;
-  
-  const now = new Date();
-  const today = now.toISOString().split('T')[0];
-  const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-  
-  // If due date is in the past
-  if (task.dueDate < today) return true;
-  
-  // If due date is today and has time that's passed
-  if (task.dueDate === today && task.dueTime && task.dueTime < currentTime) return true;
-  
-  return false;
-}
-
-isDueToday(task: Task): boolean {
-  if (!task.dueDate) return false;
-  const today = new Date().toISOString().split('T')[0];
-  return task.dueDate === today;
-}
-
-//Getter -auto recalculates when tasks, searchTerm, or selectedCategory changes and returns the filtered list of tasks to display 
-get filteredTasks(): Task[] {
-  let result = this.tasks;
-
-  // category filter
-  if (this.selectedCategory !== 'all') {
-    result = result.filter(t => t.category === this.selectedCategory);
   }
 
-  // search filter
-  if (this.searchTerm.trim()) {
-    const term = this.searchTerm.toLowerCase();
-    result = result.filter(t =>
-      t.title.toLowerCase().includes(term) ||
-      (t.description && t.description.toLowerCase().includes(term))
-    );
+  onDeleteCancelled(): void {
+    this.showDeleteDialog = false;
+    this.taskToDelete = '';  
   }
 
-  return result;
-}
 
-filterByCategory(cat: string): void {
-  this.selectedCategory = cat;
-  this.cdr.detectChanges();
-}
+  toggleTaskStatus(task: Task): void {
+    const updatedTask = {
+      ...task,
+      status: task.status === 2 ? 0 : 2
+    };
 
-getCategoryClass(category: string | null): string {
-  switch(category) {
-    case 'Assignment': return 'cat-assignment';
-    case 'Exam':       return 'cat-exam';
-    case 'Personal':   return 'cat-personal';
-    case 'Project':    return 'cat-project';
-    case 'Other':      return 'cat-other';
-    default:           return 'cat-other';
+    this.taskService.updateTask(task.id, updatedTask)
+      .pipe(
+        tap(() => {
+          task.status = updatedTask.status;
+          this.calculateProductivity();
+          this.cdr.detectChanges();
+        }),
+        catchError((error) => {
+          console.error('Error updating task:', error);
+          this.toastr.error('Failed to update task status');
+          return of(null);
+        })
+      )
+      .subscribe();
   }
-}
 
-private calculateProductivity(): void {
-  const today = new Date();
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-
-  const todayTasks =this.tasks.filter(task => {
-    const createdDate =new Date(task.createdAt);
-    return (createdDate.toDateString() ===today.toDateString());
-  });
-
-  const yesterdayTasks =this.tasks.filter(task => {
-    const createdDate =new Date(task.createdAt);
-    return (createdDate.toDateString() ===yesterday.toDateString());
-  });
-
-  this.todayTotalTasks =todayTasks.length;
-
-  this.todayCompletedTasks =todayTasks.filter(t => t.status === 2).length;
-
-  this.yesterdayTotalTasks =yesterdayTasks.length;
-
-  this.yesterdayCompletedTasks =yesterdayTasks.filter(t => t.status === 2).length;
-
-  this.todayCompletionRate =this.todayTotalTasks === 0? 0
-    : Math.round(
-          (
-            this.todayCompletedTasks /
-            this.todayTotalTasks
-          ) * 100
-        );
-
-  this.yesterdayCompletionRate =this.yesterdayTotalTasks === 0? 0
-    : Math.round(
-          (
-            this.yesterdayCompletedTasks /
-            this.yesterdayTotalTasks
-          ) * 100
-        );
-
-  this.productivityDifference =
-    this.todayCompletionRate -
-    this.yesterdayCompletionRate;
-
-  this.absoluteDifference =
-    Math.abs(
-      this.productivityDifference
-    );
-}
-
-// Toggle task status between completed and pending when checkbox is clicked in the UI
-toggleTaskStatus(task: Task): void {
-
-  const updatedTask = {
-    ...task,    //copy all fields first
-    status:      task.status === 2? 0: 2  //if currently completed(2), set to pending(0). If currently pending(0) or in progress(1), set to completed(2)
-  }; //all other fields preserved only status changes
-
-  this.taskService.updateTask(task.id, updatedTask).subscribe({
-    next: () => {
-      task.status =updatedTask.status;
-      this.calculateProductivity();
-      this.cdr.detectChanges();
-      },
-
-    error: (error) => {
-      console.error(error);
-      alert('Failed to update task status');
-    }});
-}
-
-getFormattedDueDateTime(task: Task): string {
-  if (!task.dueDate) return 'No due date';
-  
-  if (task.dueTime) {
-    return `${task.dueDate} at ${task.dueTime}`;
+  loadStreak(): void {
+    this.taskService.getStreak()
+      .pipe(
+        catchError((error) => {
+          console.error('Error loading streak:', error);
+          return of(0);
+        })
+      )
+      .subscribe(streak => {
+        this.streakCount = streak;
+        this.cdr.detectChanges();
+      });
   }
-  return task.dueDate;
-} 
-getDeadlineLabel(task: Task): string {
-  if (!task.dueDate) return 'No deadline';
-  
-  const now = new Date();
-  const today = now.toISOString().split('T')[0];
-  const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-  
-  if (this.isOverdue(task)) {
-    if (task.dueDate === today) {
-      return `Overdue (was due at ${task.dueTime})`;
-    }
-    return 'Overdue';
-  }
-  
-  if (task.dueDate === today) {
-    if (task.dueTime) {
-      return `Due today`;
-    }
-    return 'Due today';
-  }
-  
-  // Calculate days difference
-  const dueDate = new Date(task.dueDate);
-  const todayDate = new Date(today);
-  const diffDays = Math.ceil((dueDate.getTime() - todayDate.getTime()) / (1000 * 60 * 60 * 24));
-  
-  if (diffDays === 1) return 'Tomorrow';
-  if (diffDays <= 7) return `In ${diffDays} days`;
-  
-  return `Due on ${task.dueDate}`;
-}
 
-get upcomingTasks(): Task[] {
-  const now = new Date();
-  const today = now.toISOString().split('T')[0];
-  const nextWeek = new Date();
-  nextWeek.setDate(nextWeek.getDate() + 7);
-  const nextWeekStr = nextWeek.toISOString().split('T')[0];
-  
-  return this.allTasks
-    .filter(task => {
-      if (task.status === 2) return false; // Skip completed
-      if (!task.dueDate) return false; // Skip tasks without due dates
-      return task.dueDate <= nextWeekStr || this.isOverdue(task); // Show tasks due within the next week or overdue tasks
-    })
-    .sort((a, b) => {
-      // Sort by due date first, then by time
-      if (a.dueDate !== b.dueDate) { // If due dates are different, sort by due date
-        return a.dueDate!.localeCompare(b.dueDate!); //
-      }
-      if (a.dueTime && b.dueTime) { // If due dates are the same and both have due times, sort by due time
-        return a.dueTime.localeCompare(b.dueTime); 
-      }
-      return 0; 
+  loadPendingTasks(): void {
+    this.selectedMainFilter = 'pending';
+    this.isLoading = true;
+
+    this.taskService.getPendingTasks()
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        }),
+        catchError((error) => {
+          console.error('Error loading pending tasks:', error);
+          this.toastr.error('Failed to load pending tasks');
+          return of([]);
+        })
+      )
+      .subscribe(tasks => {
+        this.tasks = tasks;
+        this.applyFilters();
+        this.cdr.detectChanges();
+      });
+  }
+
+  loadInProgressTasks(): void {
+    this.selectedMainFilter = 'in-progress';
+    this.isLoading = true;
+
+    this.taskService.getInProgressTasks()
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        }),
+        catchError((error) => {
+          console.error('Error loading in-progress tasks:', error);
+          this.toastr.error('Failed to load in-progress tasks');
+          return of([]);
+        })
+      )
+      .subscribe(tasks => {
+        this.tasks = tasks;
+        this.applyFilters();
+        this.cdr.detectChanges();
+      });
+  }
+
+  loadCompletedTasks(): void {
+    this.selectedMainFilter = 'completed';
+    this.isLoading = true;
+
+    this.taskService.getCompletedTasks()
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        }),
+        catchError((error) => {
+          console.error('Error loading completed tasks:', error);
+          this.toastr.error('Failed to load completed tasks');
+          return of([]);
+        })
+      )
+      .subscribe(tasks => {
+        this.tasks = tasks;
+        this.applyFilters();
+        this.cdr.detectChanges();
+      });
+  }
+
+  loadTasksByPriority(): void {
+    this.selectedMainFilter = 'priority';
+    this.isLoading = true;
+
+    this.taskService.getTasksSortedByPriority()
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        }),
+        catchError((error) => {
+          console.error('Error loading priority tasks:', error);
+          this.toastr.error('Failed to load priority tasks');
+          return of([]);
+        })
+      )
+      .subscribe(tasks => {
+        this.tasks = tasks;
+        this.applyFilters();
+        this.cdr.detectChanges();
+      });
+  }
+
+  // UI Navigation Methods (No RxJS needed)
+  editTask(id: string): void {
+    this.router.navigate(['/tasks/edit', id]);
+  }
+
+  navigateToCreateTask(): void {
+    this.router.navigate(['/tasks/create']);
+  }
+
+   logout(): void {
+    this.showLogoutDialog = true;  
+  }
+
+  onLogoutConfirmed(): void {
+    this.showLogoutDialog = false; 
+    localStorage.removeItem('token');
+    this.toastr.info('Logged out successfully');
+    this.router.navigate(['/login']);
+  }
+
+  onLogoutCancelled(): void {
+    this.showLogoutDialog = false;  
+  }
+
+  showAllTasks(): void {
+    this.selectedMainFilter = 'all';
+    this.tasks = [...this.allTasks];
+    this.applyFilters();
+  }
+
+  showTodayTasks(): void {
+    this.selectedMainFilter = 'today';
+    const today = new Date().toDateString();
+    this.tasks = this.allTasks.filter(task => {
+      return new Date(task.createdAt).toDateString() === today;
     });
-}
+    this.applyFilters();
+  }
 
+  applyFilters(): void {
+    let filteredTasks = [...this.allTasks];
 
-
-
-
-loadStreak(): void {
-  this.taskService.getStreak().subscribe({
-    next: (response: any) => {
-      this.streakCount = response.data;
-      this.cdr.detectChanges();
-    },
-    error: (error: any) => {
-      console.error(error);
+    switch (this.selectedMainFilter) {
+      case 'today':
+        const today = new Date().toDateString();
+        filteredTasks = filteredTasks.filter(task => 
+          new Date(task.createdAt).toDateString() === today
+        );
+        break;
+      case 'pending':
+        filteredTasks = filteredTasks.filter(task => task.status === 0);
+        break;
+      case 'in-progress':
+        filteredTasks = filteredTasks.filter(task => task.status === 1);
+        break;
+      case 'completed':
+        filteredTasks = filteredTasks.filter(task => task.status === 2);
+        break;
+      case 'priority':
+        filteredTasks = filteredTasks.filter(task => task.priority === 2);
+        break;
+      case 'all':
+        filteredTasks = [...this.allTasks];
+        break;
     }
-  });
-}
 
+    if (this.selectedCategory !== 'all') {
+      filteredTasks = filteredTasks.filter(t => t.category === this.selectedCategory);
+    }
+
+    this.tasks = filteredTasks;
+    this.cdr.detectChanges();
+  }
+
+  filterByCategory(cat: string): void {
+    this.selectedCategory = cat;
+    this.applyFilters();
+  }
+
+  get filteredTasks(): Task[] {
+    let result = this.tasks;
+
+    if (this.selectedCategory !== 'all') {
+      result = result.filter(t => t.category === this.selectedCategory);
+    }
+
+    if (this.searchTerm.trim()) {
+      const term = this.searchTerm.toLowerCase();
+      result = result.filter(t =>
+        t.title.toLowerCase().includes(term) ||
+        (t.description && t.description.toLowerCase().includes(term))
+      );
+    }
+
+    return result;
+  }
+
+  get upcomingTasks(): Task[] {
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const nextWeek = new Date();
+    nextWeek.setDate(nextWeek.getDate() + 7);
+    const nextWeekStr = nextWeek.toISOString().split('T')[0];
+
+    return this.allTasks
+      .filter(task => {
+        if (task.status === 2) return false;
+        if (!task.dueDate) return false;
+        return task.dueDate <= nextWeekStr || this.isOverdue(task);
+      })
+      .sort((a, b) => {
+        if (a.dueDate !== b.dueDate) {
+          return a.dueDate!.localeCompare(b.dueDate!);
+        }
+        if (a.dueTime && b.dueTime) {
+          return a.dueTime.localeCompare(b.dueTime);
+        }
+        return 0;
+      });
+  }
+
+  getPendingCount(): number {
+    return this.tasks.filter(t => t.status === 0).length;
+  }
+
+  getInProgressCount(): number {
+    return this.tasks.filter(t => t.status === 1).length;
+  }
+
+  getCompletedCount(): number {
+    return this.tasks.filter(t => t.status === 2).length;
+  }
+
+  getHighPriorityCount(): number {
+    return this.tasks.filter(t => t.priority === 2).length;
+  }
+
+  getPriorityText(priority: number): string {
+    switch (priority) {
+      case 0: return 'Low';
+      case 1: return 'Medium';
+      case 2: return 'High';
+      default: return 'Unknown';
+    }
+  }
+
+  getStatusText(status: number): string {
+    switch (status) {
+      case 0: return 'Pending';
+      case 1: return 'In Progress';
+      case 2: return 'Completed';
+      default: return 'Unknown';
+    }
+  }
+
+  getCategoryClass(category: string | null): string {
+    switch (category) {
+      case 'Assignment': return 'cat-assignment';
+      case 'Exam': return 'cat-exam';
+      case 'Personal': return 'cat-personal';
+      case 'Project': return 'cat-project';
+      default: return 'cat-other';
+    }
+  }
+
+  isOverdue(task: Task): boolean {
+    if (!task.dueDate) return false;
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    if (task.dueDate < today) return true;
+    if (task.dueDate === today && task.dueTime && task.dueTime < currentTime) return true;
+    return false;
+  }
+
+  isDueToday(task: Task): boolean {
+    if (!task.dueDate) return false;
+    return task.dueDate === new Date().toISOString().split('T')[0];
+  }
+
+  getFormattedDueDateTime(task: Task): string {
+    if (!task.dueDate) return 'No due date';
+    return task.dueTime ? `${task.dueDate} at ${task.dueTime}` : task.dueDate;
+  }
+
+  getDeadlineLabel(task: Task): string {
+    if (!task.dueDate) return 'No deadline';
+    const today = new Date().toISOString().split('T')[0];
+    if (this.isOverdue(task)) {
+      return task.dueDate === today ? `Overdue (was due at ${task.dueTime})` : 'Overdue';
+    }
+    if (task.dueDate === today) return 'Due today';
+    const diffDays = Math.ceil((new Date(task.dueDate).getTime() - new Date(today).getTime()) / 86400000);
+    if (diffDays === 1) return 'Tomorrow';
+    if (diffDays <= 7) return `In ${diffDays} days`;
+    return `Due on ${task.dueDate}`;
+  }
+
+  private calculateProductivity(): void {
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const todayTasks = this.tasks.filter(task => {
+      const createdDate = new Date(task.createdAt);
+      return createdDate.toDateString() === today.toDateString();
+    });
+
+    const yesterdayTasks = this.tasks.filter(task => {
+      const createdDate = new Date(task.createdAt);
+      return createdDate.toDateString() === yesterday.toDateString();
+    });
+
+    this.todayTotalTasks = todayTasks.length;
+    this.todayCompletedTasks = todayTasks.filter(t => t.status === 2).length;
+    this.yesterdayTotalTasks = yesterdayTasks.length;
+    this.yesterdayCompletedTasks = yesterdayTasks.filter(t => t.status === 2).length;
+
+    this.todayCompletionRate = this.todayTotalTasks === 0 ? 0
+      : Math.round((this.todayCompletedTasks / this.todayTotalTasks) * 100);
+
+    this.yesterdayCompletionRate = this.yesterdayTotalTasks === 0 ? 0
+      : Math.round((this.yesterdayCompletedTasks / this.yesterdayTotalTasks) * 100);
+
+    this.productivityDifference = this.todayCompletionRate - this.yesterdayCompletionRate;
+    this.absoluteDifference = Math.abs(this.productivityDifference);
+  }
 }

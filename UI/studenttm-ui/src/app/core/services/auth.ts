@@ -33,7 +33,7 @@ export class AuthService {
     ).pipe(
       tap((res: LoginResponse) => {
         if (res.jwtToken) {
-          localStorage.setItem('token', res.jwtToken); // ✅ saved here now
+          localStorage.setItem('token', res.jwtToken); 
           this.isAuthenticatedSubject.next(true);
         }
       })

@@ -7,18 +7,14 @@ namespace StudentTM.API.Models.Domain
     {
         public Guid Id { get; set; }
 
-        [Required]
-        [MaxLength(200)]
         public string Title { get; set; }
 
-        [MaxLength(1000)]
         public string? Description { get; set; }
 
         public DateOnly? DueDate { get; set; }
 
         public string? DueTime { get; set; }  
 
-        [Required]
         public Priority Priority { get; set; }
 
         public TaskItemStatus Status { get; set; }

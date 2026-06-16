@@ -21,10 +21,8 @@
 
     <div class="cal-layout">
 
-      <!-- LEFT: CALENDAR -->
       <div class="cal-wrapper">
 
-        <!-- Summary -->
         <div class="summary-row">
           <div class="sum-card"><div class="sum-num">{{ getMonthTasks().length }}</div><div class="sum-lbl">Total</div></div>
           <div class="sum-card"><div class="sum-num overdue-num">{{ getOverdueCount() }}</div><div class="sum-lbl">Overdue</div></div>
@@ -32,7 +30,6 @@
           <div class="sum-card"><div class="sum-num pending-num">{{ getPendingCount() }}</div><div class="sum-lbl">Pending</div></div>
         </div>
 
-        <!-- Legend -->
         <div class="legend">
           <span class="leg-item"><span class="leg-dot" style="background:#ef4444"></span>Overdue</span>
           <span class="leg-item"><span class="leg-dot" style="background:#10b981"></span>Completed</span>
@@ -40,19 +37,16 @@
           <span class="leg-item"><span class="leg-dot" style="background:#f59e0b"></span>In Progress</span>
         </div>
 
-        <!-- Month Navigation -->
         <div class="month-nav">
           <button class="nav-btn" (click)="prevMonth()">&#8249;</button>
           <span class="month-title">{{ getMonthTitle() }}</span>
           <button class="nav-btn" (click)="nextMonth()">&#8250;</button>
         </div>
 
-        <!-- Day Labels -->
         <div class="day-labels">
           <span *ngFor="let d of dayNames">{{ d }}</span>
         </div>
 
-        <!-- Calendar Grid -->
         <div class="cal-grid">
           <div
             *ngFor="let cell of calendarCells"
@@ -65,6 +59,7 @@
             (click)="cell.day && selectDate(cell)">
 
             <span *ngIf="cell.day" class="day-num">{{ cell.day }}</span>
+            
 
             <div *ngIf="cell.day" class="dots">
               <span
@@ -79,7 +74,6 @@
 
       </div>
 
-      <!-- RIGHT: TASK DETAIL PANEL -->
       <div class="task-list-panel">
 
         <div *ngIf="!selectedDate" class="no-date-selected">
@@ -87,12 +81,15 @@
         </div>
 
         <div *ngIf="selectedDate">
-
+          
           <h3>{{ selectedDate | date:'EEE, MMM d' }}</h3>
+          
+     
 
           <div *ngIf="selectedDateTasks.length === 0" class="no-tasks">
-            No tasks on this date.
+            No tasks on this date.click "+ Add Task" to create one.
           </div>
+          
 
           <div
             *ngFor="let task of selectedDateTasks"

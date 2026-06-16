@@ -3,6 +3,8 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth';
+import { ToastrService } from 'ngx-toastr';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-register',
@@ -16,10 +18,12 @@ export class Register {
   username: string = '';
   email: string = '';
   password: string = '';
+  isLoading=false;
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private toastr: ToastrService
   ) {}
 
   onRegister(): void {
@@ -29,14 +33,18 @@ export class Register {
       password: this.password
     };
 
-    this.authService.register(request).subscribe({
+    this.isLoading = true;
+    this.authService.register(request).pipe(
+      finalize(() => {
+        this.isLoading = false;
+      })
+    ).subscribe({
       next: () => {
-        alert('Registration successful! Please login.');
+        this.toastr.success('Registration successful! Please login.');
         this.router.navigate(['/login']);
       },
-      error: (error) => {
-        console.error(error);
-        alert('Registration failed. Please try again.');
+      error: (err: Error) => {
+        this.toastr.error(err.message);
       }
     });
   }

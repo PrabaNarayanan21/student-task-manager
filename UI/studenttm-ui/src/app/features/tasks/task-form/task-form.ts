@@ -1,221 +1,163 @@
-import {Component,OnInit,ChangeDetectorRef} from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core'; // ADDED: OnDestroy
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {Router,RouterModule,ActivatedRoute} from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { TaskService } from '../../../core/services/task';
 import { Priority } from '../../../core/enums/task-priority.enum';
 import { TaskItemStatus } from '../../../core/enums/task-status.enum';
+import { ToastrService } from 'ngx-toastr';
+import { Subject } from 'rxjs';                          // ADDED
+import { takeUntil, finalize } from 'rxjs/operators';    // ADDED
 
 @Component({
   selector: 'app-task-form',
   standalone: true,
-  imports: [CommonModule,FormsModule,RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './task-form.html',
   styleUrl: './task-form.css'
 })
-export class TaskForm implements OnInit {
-
-  // FORM FIELDS
+export class TaskForm implements OnInit, OnDestroy { // ADDED: OnDestroy
 
   title: string = '';
-
   description: string = '';
-
-  dueDate: string = '';
-
-  taskTime: string = '';
-
+  dueDate: string | null = null;
+  taskTime: string | null = null;
   priority: Priority = Priority.Low;
-
-  status: TaskItemStatus =
-    TaskItemStatus.Pending;
-  
+  status: TaskItemStatus = TaskItemStatus.Pending;
   category: string = '';
 
-  // EDIT MODE
-
   isEditMode = false;
-
   taskId: string = '';
 
-  // DROPDOWNS
-
   priorityOptions = [
-    {
-      label: 'Low',
-      value: Priority.Low
-    },
-    {
-      label: 'Medium',
-      value: Priority.Medium
-    },
-    {
-      label: 'High',
-      value: Priority.High
-    }
+    { label: 'Low', value: Priority.Low },
+    { label: 'Medium', value: Priority.Medium },
+    { label: 'High', value: Priority.High }
   ];
 
   statusOptions = [
-    {
-      label: 'Pending',
-      value: TaskItemStatus.Pending
-    },
-    {
-      label: 'In Progress',
-      value: TaskItemStatus.InProgress
-    },
-    {
-      label: 'Completed',
-      value: TaskItemStatus.Completed
-    }
+    { label: 'Pending', value: TaskItemStatus.Pending },
+    { label: 'In Progress', value: TaskItemStatus.InProgress },
+    { label: 'Completed', value: TaskItemStatus.Completed }
   ];
-  categoryOptions = [
-  'Assignment',
-  'Exam',
-  'Personal',
-  'Project',
-  'Other'
-];
 
-  // UI STATE
+  categoryOptions = ['Assignment', 'Exam', 'Personal', 'Project', 'Other'];
 
   isSubmitting = false;
-
   errorMessage: string = '';
+
+  // ADDED: destroy$ to auto-unsubscribe all subscriptions when component is destroyed
+  private destroy$ = new Subject<void>();
 
   constructor(
     private taskService: TaskService,
     private router: Router,
     private route: ActivatedRoute,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private toastr: ToastrService
   ) {}
 
   ngOnInit(): void {
-    this.taskId =this.route.snapshot.paramMap.get('id') || '';
-
+    this.taskId = this.route.snapshot.paramMap.get('id') || '';
     if (this.taskId) {
       this.isEditMode = true;
       this.loadTask();
     }
   }
 
-  // LOAD TASK FOR EDIT
-
-  loadTask(): void {  //fetches that task from the backend and fills the form fields with its existing data so the user can see and modify them
-
-    this.taskService.getTaskById(this.taskId).subscribe({
-      next: (response: any) => {
-        const task = response.data;
-        this.title = task.title;
-        this.description =task.description || '';
-        this.priority =task.priority;
-        this.status =task.status;
-        this.category = task.category || '';
-        this.dueDate = task.dueDate ; 
-        this.taskTime = task.dueTime ;
-
-        this.cdr.detectChanges();
-      },
-
-      error: (error: any) => {
-        console.error(error);
-        this.errorMessage ='Failed to load task';
-      }
-      });
+  // ADDED: emit on destroy$ so takeUntil cleans up active subscriptions
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  // SUBMIT
+  loadTask(): void {
+    this.taskService.getTaskById(this.taskId).pipe(
+      takeUntil(this.destroy$) // ADDED: if user navigates away before response, unsubscribes
+    ).subscribe({
+      next: (task) => {
+        // CHANGED: service returns Task directly now — no more response.data
+        this.title = task.title;
+        this.description = task.description || '';
+        this.priority = task.priority;
+        this.status = task.status;
+        this.category = task.category || '';
+        this.dueDate = task.dueDate;
+        this.taskTime = task.dueTime;
+        this.cdr.detectChanges();
+      },
+      error: (err: Error) => {
+        // CHANGED: err.message already formatted by service's catchError
+        this.toastr.error(err.message);
+      }
+    });
+  }
 
   onSubmit(): void {
     this.errorMessage = '';
-    // VALIDATION
-    if (!this.title.trim()) {
-      this.errorMessage ='Title is required';
-      return;
-    }
 
-    if (!this.dueDate) {
-      this.errorMessage = 'Due date is required';
-      return;
-    }
+    if (!this.title.trim()) { this.toastr.warning('Title is required'); return; }
+    if (!this.dueDate) { this.toastr.warning('Due date is required'); return; }
+    if (this.title.length > 100) { this.toastr.warning('Title must be less than 100 characters'); return; }
 
-    if (this.title.length > 100) {
-      this.errorMessage ='Title must be less than 100 characters';
-      return;
-    }
- 
-    this.isSubmitting = true; 
-    
-    // PAYLOAD
-  const payload = { //data that will be sent to the backend
-      title: this.title.trim(), //removes leading or trailing spaces
+    this.isSubmitting = true;
+
+    const payload = {
+      title: this.title.trim(),
       description: this.description.trim() || null,
       dueDate: this.dueDate || null,
       dueTime: this.taskTime || null,
-      priority: Number(this.priority), //converts to number
+      priority: Number(this.priority),
       status: Number(this.status),
       category: this.category || null
-};
-
-    console.log('Submitting payload:', payload);
-
-    // EDIT MODE
+    };
 
     if (this.isEditMode) {
-      this.taskService.updateTask(this.taskId,payload).subscribe({
-        next: (response: any) => {
+      this.taskService.updateTask(this.taskId, payload).pipe(
+        // ADDED: finalize — always hides the spinner, whether success or error
+        finalize(() => {
           this.isSubmitting = false;
           this.cdr.detectChanges();
-          alert('Task updated successfully');
+        }),
+        takeUntil(this.destroy$) // ADDED
+      ).subscribe({
+        next: () => {
+          this.toastr.success('Task updated successfully');
           this.router.navigate(['/dashboard']);
-          },
+        },
+        error: (err: Error) => {
+          this.toastr.error(err.message);
+        }
+      });
 
-        error: (error: any) => {
+    } else {
+      this.taskService.createTask(payload).pipe(
+        finalize(() => {
           this.isSubmitting = false;
           this.cdr.detectChanges();
-          this.errorMessage = 'Failed to update task';
-          }
-        });
-    }
-
-    // CREATE MODE
-
-    else {
-  this.taskService.createTask(payload).subscribe({
-    next: (response: any) => {
-      this.isSubmitting = false;
-      this.cdr.detectChanges();
-      this.router.navigate(['/dashboard']);
-    },
-    error: (error: any) => {
-      this.isSubmitting = false;
-      this.cdr.detectChanges();
-      if (error.error &&error.error.message) {
-        this.errorMessage =error.error.message;
-      } 
-      else if (error.status === 400) {
-        this.errorMessage ='Invalid task data';
-      } 
-      else if (error.status === 401) {
-        this.errorMessage ='You must login first';
-      } 
-      else {
-        this.errorMessage ='Failed to create task';
-      }
-      }
-    });
+        }),
+        takeUntil(this.destroy$) // ADDED
+      ).subscribe({
+        next: () => {
+          this.toastr.success('Task created successfully!');
+          this.router.navigate(['/dashboard']);
+        },
+        error: (err: Error) => {
+          // CHANGED: service catchError already picks the right message — just display it
+          this.toastr.error(err.message);
+        }
+      });
     }
   }
 
-// RESET FORM
-resetForm(): void {
-  this.title = '';
-  this.description = '';
-  this.dueDate = '';
-  this.priority = Priority.Low;
-  this.status = TaskItemStatus.Pending;
-  this.taskTime = '';
-  this.category = '';
-  this.errorMessage = '';
-} 
+  resetForm(): void {
+    this.title = '';
+    this.description = '';
+    this.dueDate = '';
+    this.priority = Priority.Low;
+    this.status = TaskItemStatus.Pending;
+    this.taskTime = '';
+    this.category = '';
+    this.errorMessage = '';
+  }
 }
