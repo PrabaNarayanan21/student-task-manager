@@ -33,7 +33,7 @@ namespace StudentTM.API.Repositories.Implementation
             command.Parameters.AddWithValue("@Description",
                 (object?)task.Description ?? DBNull.Value);
 
-            command.Parameters.AddWithValue("@DueDate", (object?)(task.DueDate) ?? DBNull.Value);
+            command.Parameters.AddWithValue("@DueDate", task.DueDate);
             command.Parameters.AddWithValue("@DueTime", (object?)task.DueTime ?? DBNull.Value);
 
             command.Parameters.AddWithValue("@Priority",
@@ -87,9 +87,7 @@ namespace StudentTM.API.Repositories.Implementation
                     Id = reader.GetGuid(reader.GetOrdinal("Id")),
                     Title = reader["Title"].ToString(),
                     Description = reader["Description"]?.ToString(),
-                    DueDate = reader["DueDate"] == DBNull.Value
-                        ? null
-                        : DateOnly.FromDateTime(Convert.ToDateTime(reader["DueDate"])),
+                    DueDate =   DateOnly.FromDateTime(Convert.ToDateTime(reader["DueDate"])),
                     DueTime = reader["DueTime"] == DBNull.Value
                         ? null
                         : reader["DueTime"].ToString(),
@@ -150,9 +148,7 @@ namespace StudentTM.API.Repositories.Implementation
                     Description =
                         reader["Description"]?.ToString(),
 
-                    DueDate = reader["DueDate"] == DBNull.Value
-                        ? null
-                        : DateOnly.FromDateTime(Convert.ToDateTime(reader["DueDate"])),
+                    DueDate = DateOnly.FromDateTime(Convert.ToDateTime(reader["DueDate"])),
                     DueTime = reader["DueTime"] == DBNull.Value
                         ? null
                         : reader["DueTime"].ToString(),
@@ -201,7 +197,7 @@ namespace StudentTM.API.Repositories.Implementation
             command.Parameters.AddWithValue("@Description",
                 (object?)task.Description ?? DBNull.Value);
 
-            command.Parameters.AddWithValue("@DueDate", (object?)(task.DueDate) ?? DBNull.Value);
+            command.Parameters.AddWithValue("@DueDate", task.DueDate) ;
             command.Parameters.AddWithValue("@DueTime", (object?)task.DueTime ?? DBNull.Value);
             command.Parameters.AddWithValue("@Priority",
                 (int)task.Priority);
@@ -278,8 +274,7 @@ namespace StudentTM.API.Repositories.Implementation
                     Id = Guid.Parse(reader["Id"].ToString()),
                     Title = reader["Title"].ToString(),
                     Description = reader["Description"]?.ToString(),
-                    DueDate = reader["DueDate"] == DBNull.Value
-                        ? null : DateOnly.FromDateTime(Convert.ToDateTime(reader["DueDate"])),
+                    DueDate =  DateOnly.FromDateTime(Convert.ToDateTime(reader["DueDate"])),
                     DueTime = reader["DueTime"] == DBNull.Value
                         ? null: reader["DueTime"].ToString(),
                     Priority = (Priority)reader["Priority"],
@@ -323,8 +318,7 @@ namespace StudentTM.API.Repositories.Implementation
                     Id = Guid.Parse(reader["Id"].ToString()),
                     Title = reader["Title"].ToString(),
                     Description = reader["Description"]?.ToString(),
-                    DueDate = reader["DueDate"] == DBNull.Value
-                        ? null : DateOnly.FromDateTime(Convert.ToDateTime(reader["DueDate"])),
+                    DueDate = DateOnly.FromDateTime(Convert.ToDateTime(reader["DueDate"])),
                     DueTime = reader["DueTime"] == DBNull.Value
                         ? null: reader["DueTime"].ToString(),
                     Priority = (Priority)reader["Priority"],
@@ -345,7 +339,7 @@ namespace StudentTM.API.Repositories.Implementation
             var connectionString =
                 configuration.GetConnectionString("DefaultConnection");
             using var connection = new SqlConnection(connectionString);
-            using var command = new SqlCommand("sp_GetCompletedTaskDates", connection);
+            using var command = new SqlCommand("sp_GetCompletedTaskDates", connection); // get all unique dates where user completes atleast 1 task
             command.CommandType = CommandType.StoredProcedure;
             command.Parameters.AddWithValue("@UserId", userId);
 
@@ -360,7 +354,7 @@ namespace StudentTM.API.Repositories.Implementation
 
             // Count streak backwards from today
             int streak = 0;
-            var checkDate = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+            var checkDate = DateOnly.FromDateTime(DateTime.UtcNow.Date);   
 
             // If nothing completed today, start from yesterday
             if (!completedDates.Contains(checkDate))

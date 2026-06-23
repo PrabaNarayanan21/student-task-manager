@@ -1,33 +1,27 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core'; // ADDED: OnDestroy
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core'; 
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import {ReactiveFormsModule,FormBuilder,FormGroup,Validators} from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { TaskService } from '../../../core/services/task';
 import { Priority } from '../../../core/enums/task-priority.enum';
 import { TaskItemStatus } from '../../../core/enums/task-status.enum';
 import { ToastrService } from 'ngx-toastr';
-import { Subject } from 'rxjs';                          // ADDED
-import { takeUntil, finalize } from 'rxjs/operators';    // ADDED
+import { Subject } from 'rxjs';                          
+import { takeUntil, finalize } from 'rxjs/operators';   
 
 @Component({
-  selector: 'app-task-form',
+  selector: 'app-task-form', 
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './task-form.html',
   styleUrl: './task-form.css'
 })
-export class TaskForm implements OnInit, OnDestroy { // ADDED: OnDestroy
+export class TaskForm implements OnInit, OnDestroy { 
 
-  title: string = '';
-  description: string = '';
-  dueDate: string | null = null;
-  taskTime: string | null = null;
-  priority: Priority = Priority.Low;
-  status: TaskItemStatus = TaskItemStatus.Pending;
-  category: string = '';
-
+  taskForm!: FormGroup;
   isEditMode = false;
   taskId: string = '';
+  today: string = '';
 
   priorityOptions = [
     { label: 'Low', value: Priority.Low },
@@ -46,7 +40,7 @@ export class TaskForm implements OnInit, OnDestroy { // ADDED: OnDestroy
   isSubmitting = false;
   errorMessage: string = '';
 
-  // ADDED: destroy$ to auto-unsubscribe all subscriptions when component is destroyed
+  // destroy$ - auto-unsubscribe all subscriptions when component is destroyed
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -54,72 +48,150 @@ export class TaskForm implements OnInit, OnDestroy { // ADDED: OnDestroy
     private router: Router,
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private fb: FormBuilder
   ) {}
 
-  ngOnInit(): void {
-    this.taskId = this.route.snapshot.paramMap.get('id') || '';
-    if (this.taskId) {
-      this.isEditMode = true;
-      this.loadTask();
-    }
-  }
+ngOnInit(): void {
 
-  // ADDED: emit on destroy$ so takeUntil cleans up active subscriptions
+  this.today = new Date().toISOString().split('T')[0];
+
+  this.taskForm = this.fb.group({
+    title: [
+      '',
+      [
+        Validators.required,
+        Validators.maxLength(100)
+      ]
+    ],
+    description: [''],
+    category: [''],
+    dueDate: [
+      '',
+      [
+    Validators.required,
+    this.pastDateValidator()
+  ]
+    ],
+    dueTime: [''],
+    priority: [
+      Priority.Low
+    ],
+    status: [
+      TaskItemStatus.Pending
+    ]
+  });
+
+  this.taskId = this.route.snapshot.paramMap.get('id') || '';
+  
+  // Check for date from calendar 
+  const dateFromCalendar = this.route.snapshot.queryParamMap.get('date');
+  if (dateFromCalendar) {
+    this.taskForm.patchValue({ dueDate: dateFromCalendar });
+  } 
+
+  // Then check if in edit mode
+  if (this.taskId) { 
+    this.isEditMode = true;
+    this.loadTask();
+  }
+} 
+  //emit on destroy$ so takeUntil cleans up active subscriptions
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
   loadTask(): void {
-    this.taskService.getTaskById(this.taskId).pipe(
-      takeUntil(this.destroy$) // ADDED: if user navigates away before response, unsubscribes
-    ).subscribe({
+
+  this.taskService
+    .getTaskById(this.taskId)
+    .pipe(
+      takeUntil(this.destroy$)
+    )
+    .subscribe({
+
       next: (task) => {
-        // CHANGED: service returns Task directly now — no more response.data
-        this.title = task.title;
-        this.description = task.description || '';
-        this.priority = task.priority;
-        this.status = task.status;
-        this.category = task.category || '';
-        this.dueDate = task.dueDate;
-        this.taskTime = task.dueTime;
+
+        this.taskForm.patchValue({
+
+          title: task.title,
+
+          description:
+            task.description || '',
+
+          category:
+            task.category || '',
+
+          dueDate:
+            task.dueDate,
+
+          dueTime:
+            task.dueTime,
+
+          priority:
+            task.priority,
+
+          status:
+            task.status
+        });
+
         this.cdr.detectChanges();
       },
+
       error: (err: Error) => {
-        // CHANGED: err.message already formatted by service's catchError
-        this.toastr.error(err.message);
+
+        this.toastr.error(
+          err.message
+        );
       }
     });
-  }
+}
 
   onSubmit(): void {
     this.errorMessage = '';
 
-    if (!this.title.trim()) { this.toastr.warning('Title is required'); return; }
-    if (!this.dueDate) { this.toastr.warning('Due date is required'); return; }
-    if (this.title.length > 100) { this.toastr.warning('Title must be less than 100 characters'); return; }
+    if (this.taskForm.invalid) {
 
+  this.taskForm.markAllAsTouched();
+
+  return;
+}
     this.isSubmitting = true;
 
     const payload = {
-      title: this.title.trim(),
-      description: this.description.trim() || null,
-      dueDate: this.dueDate || null,
-      dueTime: this.taskTime || null,
-      priority: Number(this.priority),
-      status: Number(this.status),
-      category: this.category || null
-    };
+  ...this.taskForm.value,
+
+  title:
+    this.taskForm.value.title.trim(),
+
+  description:
+    this.taskForm.value.description?.trim() || null,
+
+  category:
+    this.taskForm.value.category || null,
+
+  dueDate:
+    this.taskForm.value.dueDate || null,
+
+  dueTime:
+    this.taskForm.value.dueTime || null,
+
+  priority:
+    Number(this.taskForm.value.priority),
+
+  status:
+    Number(this.taskForm.value.status)
+};
 
     if (this.isEditMode) {
       this.taskService.updateTask(this.taskId, payload).pipe(
-        // ADDED: finalize — always hides the spinner, whether success or error
+        // finalize — always hides the spinner, whether success or error
         finalize(() => {
           this.isSubmitting = false;
           this.cdr.detectChanges();
         }),
-        takeUntil(this.destroy$) // ADDED
+        takeUntil(this.destroy$) 
       ).subscribe({
         next: () => {
           this.toastr.success('Task updated successfully');
@@ -136,28 +208,39 @@ export class TaskForm implements OnInit, OnDestroy { // ADDED: OnDestroy
           this.isSubmitting = false;
           this.cdr.detectChanges();
         }),
-        takeUntil(this.destroy$) // ADDED
+        takeUntil(this.destroy$) 
       ).subscribe({
         next: () => {
           this.toastr.success('Task created successfully!');
           this.router.navigate(['/dashboard']);
         },
         error: (err: Error) => {
-          // CHANGED: service catchError already picks the right message — just display it
           this.toastr.error(err.message);
         }
       });
     }
   }
 
-  resetForm(): void {
-    this.title = '';
-    this.description = '';
-    this.dueDate = '';
-    this.priority = Priority.Low;
-    this.status = TaskItemStatus.Pending;
-    this.taskTime = '';
-    this.category = '';
-    this.errorMessage = '';
-  }
+  pastDateValidator() {
+  return (control: any) => {
+
+    if (!control.value) {
+      return null;
+    }
+
+    const selectedDate = new Date(control.value);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return selectedDate < today 
+      ? { pastDate: true }
+      : null;
+  };
 }
+
+  resetForm(): void {
+    this.taskForm.reset();
+  }
+} 
+ 

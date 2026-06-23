@@ -20,8 +20,8 @@ builder.Services.AddScoped<ITokenRepository, TokenRepository>();
 // registers authentication services in ASP.NET //JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme) //tells the app to use jwt bearer token authentication
     .AddJwtBearer(options =>                                                //without this,[Authorize] keyword in controllers does nothing
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
+    { 
+         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,   // check who created the token
             ValidateAudience = true, // check who the token is for
@@ -45,7 +45,7 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader()
               .AllowAnyMethod();  
     }); 
-});
+});      
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -59,15 +59,15 @@ builder.Services.AddSwaggerGen(options =>
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
-        Type = SecuritySchemeType.Http,
+        Type = SecuritySchemeType.Http, 
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
         Description = "Enter JWT Token"
-    });
+    }); 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
-        {
+        { 
             new OpenApiSecurityScheme
             {
                 Reference = new OpenApiReference

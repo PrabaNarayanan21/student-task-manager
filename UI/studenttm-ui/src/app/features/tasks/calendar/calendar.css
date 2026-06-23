@@ -258,3 +258,70 @@ body {
 .pending-status   { background: #FEF3C7; color: #D97706; }
 .progress-status  { background: #DBEAFE; color: #2563EB; }
 .completed-status { background: #DCFCE7; color: #16A34A; }
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.add-task-btn {
+  background: #6c63ff;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.add-task-btn:hover {
+  background: #4f46e5;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.add-task-btn {
+  background: #6c63ff;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.add-task-btn:hover {
+  background: #4f46e5;
+}
+
+/* Checkbox */
+.task-item-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.task-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #6c63ff;
+}
+
+/* Strikethrough completed title */
+.completed-title {
+  text-decoration: line-through;
+  color: #9ca3af;
+}

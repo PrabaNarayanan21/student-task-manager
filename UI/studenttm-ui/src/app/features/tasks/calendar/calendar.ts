@@ -1,20 +1,21 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core'; // ADDED: OnDestroy
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core'; 
 import { CommonModule } from '@angular/common';
 import { TaskService } from '../../../core/services/task';
 import { RouterModule, Router } from '@angular/router';
 import { Task } from '../../../core/models/task.model';
-import { ToastrService } from 'ngx-toastr';       // ADDED: toastr for errors
-import { Subject, of } from 'rxjs';               // ADDED
-import { takeUntil, catchError } from 'rxjs/operators'; // ADDED
+import { ToastrService } from 'ngx-toastr';       //  toastr for errors
+import { Subject, of } from 'rxjs';               
+import { takeUntil, catchError } from 'rxjs/operators'; 
+import { ConfirmDialog } from '../../../shared/confirm-dialog/confirm-dialog';
 
 @Component({
   selector: 'app-calendar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule,ConfirmDialog],
   templateUrl: './calendar.html',
   styleUrl: './calendar.css'
 })
-export class Calendar implements OnInit, OnDestroy { // ADDED: OnDestroy
+export class Calendar implements OnInit, OnDestroy { 
 
   allTasks: Task[] = [];
   selectedDate: string | null = null;
@@ -26,21 +27,22 @@ export class Calendar implements OnInit, OnDestroy { // ADDED: OnDestroy
   private currentYear = new Date().getFullYear();
   private currentMonth = new Date().getMonth();
 
-  // ADDED: destroy$ for cleanup
   private destroy$ = new Subject<void>();
+
+  showLogoutDialog = false;
+
 
   constructor(
     private taskService: TaskService,
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private toastr: ToastrService // ADDED
+    private toastr: ToastrService 
   ) {}
 
   ngOnInit(): void {
     this.loadTasks(); 
   }
 
-  // ADDED: cleanup on destroy
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
@@ -49,20 +51,17 @@ export class Calendar implements OnInit, OnDestroy { // ADDED: OnDestroy
   loadTasks(): void {
     this.taskService.getTasks().pipe(
       catchError(err => {
-        // ADDED: show error toast, return empty so calendar still renders
         this.toastr.error(err.message);
         return of([]);
       }),
-      takeUntil(this.destroy$) // ADDED
+      takeUntil(this.destroy$) 
     ).subscribe(tasks => {
-      // CHANGED: service returns Task[] directly — no more response.data
       this.allTasks = tasks;
       this.buildCalendar();
       this.cdr.detectChanges();
     });
   }
 
-  // No changes needed below — purely synchronous calendar logic
 
   buildCalendar(): void {
     const today = new Date();
@@ -191,8 +190,53 @@ export class Calendar implements OnInit, OnDestroy { // ADDED: OnDestroy
     }
   }
 
-  logout(): void {
+  addTask(): void {
+  this.router.navigate(
+    ['/tasks/create'],
+    { queryParams: { date: this.selectedDate } }
+  );
+}
+
+ isPastDate(dateStr: string): boolean {
+  const today = new Date().toISOString().split('T')[0];
+  return dateStr < today;
+}
+
+toggleTaskStatus(task: Task): void {
+  const updatedTask = {
+    ...task,
+    status: task.status === 2 ? 0 : 2
+  };
+
+  this.taskService.updateTask(task.id, updatedTask).subscribe({
+    next: () => {
+      task.status = updatedTask.status;
+      this.buildCalendar(); 
+      this.cdr.detectChanges();
+      this.toastr.success(
+        task.status === 2
+          ? 'Task marked as completed!'
+          : 'Task marked as pending!'
+      );
+    },
+    error: () => {
+      this.toastr.error('Failed to update task status');
+    }
+  });
+}
+logout(): void {
+    this.showLogoutDialog = true;  
+  }
+
+  onLogoutConfirmed(): void {
+    this.showLogoutDialog = false; 
     localStorage.removeItem('token');
+    this.toastr.info('Logged out successfully');
     this.router.navigate(['/login']);
   }
+
+  onLogoutCancelled(): void {
+    this.showLogoutDialog = false;  
+  }
+  
 }

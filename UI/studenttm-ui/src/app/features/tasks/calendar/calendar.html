@@ -1,8 +1,20 @@
 <div class="dashboard-container">
 
+  <app-confirm-dialog
+    [isVisible]="showLogoutDialog"
+    [title]="'Confirm Logout'"
+    [message]="'Are you sure you want to logout?'"
+    [confirmText]="'Yes, Logout'"
+    [cancelText]="'Stay'"
+    [type]="'warning'"
+    (confirmed)="onLogoutConfirmed()"
+    (cancelled)="onLogoutCancelled()">
+  </app-confirm-dialog>
+
+
   <aside class="sidebar">
     <div class="logo-section">
-      <h2>Student<span style="color:#60A5FA">TM</span></h2>
+      <h2>Student<span style="color:#60A5FA">TM</span></h2> 
     </div>
     <nav class="sidebar-menu">
       <a class="menu-item" routerLink="/dashboard">🏠 Dashboard</a>
@@ -80,34 +92,71 @@
           <p>Click a date to see tasks</p>
         </div>
 
-        <div *ngIf="selectedDate">
-          
-          <h3>{{ selectedDate | date:'EEE, MMM d' }}</h3>
-          
-     
+<div *ngIf="selectedDate">
+<!--check if selected date past date: if not: add task button-->
+  <div class="panel-header">
+    <h3>{{ selectedDate | date:'EEE, MMM d' }}</h3>
 
-          <div *ngIf="selectedDateTasks.length === 0" class="no-tasks">
-            No tasks on this date.click "+ Add Task" to create one.
-          </div>
-          
+    <button
+      *ngIf="!isPastDate(selectedDate)"
+      class="add-task-btn"
+      (click)="addTask()">
+      + Add Task
+    </button>
+  </div>
+<!--if past selected date and task len is 0:custom -->
+  <div *ngIf="selectedDateTasks.length === 0" class="no-tasks">
 
-          <div
-            *ngFor="let task of selectedDateTasks"
-            class="task-item"
-            [ngClass]="getTaskCardClass(task)">
+    <p *ngIf="isPastDate(selectedDate)">
+      No tasks were due on this date.
+    </p>
+<!--if it is not a past date:custom msg-->
+    <p *ngIf="!isPastDate(selectedDate)">
+      No tasks on this date.
+    </p>
 
-            <div class="task-time"> 
-              <span *ngIf="task.dueTime">{{ task.dueDate }} @ {{ task.dueTime }}</span>
-              <span *ngIf="!task.dueTime">{{ task.dueDate }}</span>
-            </div>
-            <div class="task-item-title">{{ task.title }}</div>
-            <span class="status-badge" [ngClass]="getStatusClass(task.status)">
-              {{ getStatusText(task.status) }}
-            </span>
+  </div>
 
-          </div>
+  <div
+    *ngFor="let task of selectedDateTasks"
+    class="task-item"
+    [ngClass]="getTaskCardClass(task)">
 
-        </div>
+    <div class="task-item-top">
+
+      <input
+        type="checkbox"
+        class="task-checkbox"
+        [checked]="task.status === 2"
+        (change)="toggleTaskStatus(task)"
+      />
+
+      <span
+        class="task-item-title"
+        [ngClass]="{ 'completed-title': task.status === 2 }">
+        {{ task.title }}
+      </span>
+
+    </div>
+
+    <div class="task-time">
+      <span *ngIf="task.dueTime">
+        {{ task.dueDate }} @ {{ task.dueTime }}
+      </span>
+      <span *ngIf="!task.dueTime">
+        {{ task.dueDate }}
+      </span>
+    </div>
+
+    <span
+      class="status-badge"
+      [ngClass]="getStatusClass(task.status)">
+      {{ getStatusText(task.status) }}
+    </span>
+
+  </div>
+
+</div>
 
       </div>
 

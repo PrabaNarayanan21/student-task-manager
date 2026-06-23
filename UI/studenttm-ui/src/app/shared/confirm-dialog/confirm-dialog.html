@@ -1,28 +1,22 @@
-<!-- Overlay — dark background behind dialog -->
 <div
   class="overlay"
   *ngIf="isVisible"
   (click)="onCancel()">
 
-  <!-- Dialog box — stop click from reaching overlay -->
   <div
     class="dialog"
    (click)="$event.stopPropagation()" >
 
-    <!-- Icon based on type -->
     <div class="dialog-icon" [ngClass]="'icon-' + type">
       <span *ngIf="type === 'danger'">🗑️</span>
       <span *ngIf="type === 'warning'">⚠️</span>
       <span *ngIf="type === 'info'">ℹ️</span>
     </div>
 
-    <!-- Title -->
     <h3 class="dialog-title">{{ title }}</h3>
 
-    <!-- Message -->
     <p class="dialog-message">{{ message }}</p>
 
-    <!-- Actions -->
     <div class="dialog-actions">
 
       <button

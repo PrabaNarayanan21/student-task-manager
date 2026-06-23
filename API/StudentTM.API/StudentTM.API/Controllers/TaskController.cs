@@ -14,10 +14,12 @@ namespace StudentTM.API.Controllers
     public class TaskController : ControllerBase
     {
         private readonly ITaskRepository taskRepository;
+        private readonly ILogger<TaskController> logger;
 
-        public TaskController(ITaskRepository taskRepository)
+        public TaskController(ITaskRepository taskRepository, ILogger<TaskController> logger)
         {
             this.taskRepository = taskRepository;
+            this.logger = logger;
         }
         
         // CREATE TASK
@@ -42,9 +44,19 @@ namespace StudentTM.API.Controllers
             }
 
             DateOnly? dueDate = null;
-            if (!string.IsNullOrEmpty(request.DueDate))
+
+            if (!string.IsNullOrWhiteSpace(request.DueDate))
             {
-                dueDate = DateOnly.Parse(request.DueDate);
+                 if (!DateOnly.TryParse(request.DueDate, out var parsedDate))
+                {
+                    return BadRequest(new ApiResponseDto
+                    {
+                        Success = false,
+                        Message = $"Invalid date format: {request.DueDate}"
+                    });
+                }
+
+                dueDate = parsedDate;
             }
 
             var task = new TaskItem
@@ -73,6 +85,8 @@ namespace StudentTM.API.Controllers
                 });
             }
 
+            logger.LogInformation("Task created with title {Title}",request.Title);
+
             return Ok(new ApiResponseDto
             {
                 Success = true,
@@ -90,6 +104,8 @@ namespace StudentTM.API.Controllers
 
             if (string.IsNullOrEmpty(userId))
             {
+                logger.LogWarning("Unauthorized access attempt to GetTasks");
+
                 return Unauthorized();
             }
 
@@ -129,6 +145,7 @@ namespace StudentTM.API.Controllers
 
             if (string.IsNullOrEmpty(userId))
             {
+                logger.LogWarning("Unauthorized access attempt to GetTasks");
                 return Unauthorized();
             }
 
@@ -139,6 +156,7 @@ namespace StudentTM.API.Controllers
 
             if (task == null)
             {
+                logger.LogWarning("Task {Id} not found",id);
                 return NotFound(new ApiResponseDto
                 {
                     Success = false,
@@ -223,11 +241,15 @@ namespace StudentTM.API.Controllers
                 });
             }
 
+
+            logger.LogInformation("Task {Id} updated successfully",id);
             return Ok(new ApiResponseDto
             {
                 Success = true,
                 Message = "Task updated successfully."
             });
+
+            
         }
 
         // DELETE TASK
@@ -251,12 +273,13 @@ namespace StudentTM.API.Controllers
                     Message = "Task not found."
                 });
             }
-
+            logger.LogInformation("Task {Id} deleted successfully",id);
             return Ok(new ApiResponseDto
             {
                 Success = true,
                 Message = "Task deleted successfully."
             });
+            
         }
 
         [HttpGet]
@@ -265,8 +288,10 @@ namespace StudentTM.API.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
+            if (string.IsNullOrEmpty(userId)) {
+                logger.LogWarning("Unauthorized access attempt to GetTasks");
+                return Unauthorized(); 
+            }
 
             var tasks = await taskRepository
                 .GetTasksByStatusAsync(
@@ -302,7 +327,11 @@ namespace StudentTM.API.Controllers
                 ClaimTypes.NameIdentifier);
 
             if (string.IsNullOrEmpty(userId))
+            {
+                logger.LogWarning("Unauthorized access attempt to GetTasks");
                 return Unauthorized();
+            }
+                
 
             var tasks = await taskRepository
                 .GetTasksByStatusAsync(
@@ -336,8 +365,9 @@ namespace StudentTM.API.Controllers
             var userId = User.FindFirstValue(
                 ClaimTypes.NameIdentifier);
 
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
+            if (string.IsNullOrEmpty(userId)) { 
+            logger.LogWarning("Unauthorized access attempt to GetTasks");
+            return Unauthorized(); }
 
             var tasks = await taskRepository
                 .GetTasksByStatusAsync(
@@ -377,6 +407,7 @@ namespace StudentTM.API.Controllers
 
             if (string.IsNullOrEmpty(userId))
             {
+                logger.LogWarning("Unauthorized access attempt to GetTasks");
                 return Unauthorized();
             }
 
@@ -412,8 +443,9 @@ namespace StudentTM.API.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
+            if (string.IsNullOrEmpty(userId)) {
+                logger.LogWarning("Unauthorized access attempt to GetTasks");
+            return Unauthorized(); }
 
             var streak = await taskRepository.GetStreakAsync(Guid.Parse(userId));
 

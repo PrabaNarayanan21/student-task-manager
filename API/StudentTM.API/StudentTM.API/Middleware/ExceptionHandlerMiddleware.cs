@@ -8,13 +8,11 @@ namespace StudentTM.API.Middleware
         private readonly RequestDelegate next;
         private readonly ILogger<ExceptionHandlerMiddleware> logger;
 
-        public ExceptionHandlerMiddleware(
-            RequestDelegate next,
-            ILogger<ExceptionHandlerMiddleware> logger)
-        {
+        public ExceptionHandlerMiddleware(RequestDelegate next,ILogger<ExceptionHandlerMiddleware> logger)
+        { 
             this.next = next;
             this.logger = logger;
-        }
+        } 
 
         public async Task InvokeAsync(HttpContext context)
         {
@@ -26,11 +24,9 @@ namespace StudentTM.API.Middleware
             {
                 logger.LogError(ex, ex.Message);
 
-                context.Response.StatusCode =
-                    (int)HttpStatusCode.InternalServerError;
+                context.Response.StatusCode =(int)HttpStatusCode.InternalServerError;
 
-                context.Response.ContentType =
-                    "application/json";
+                context.Response.ContentType ="application/json";
 
                 var response = new
                 {
@@ -38,8 +34,7 @@ namespace StudentTM.API.Middleware
                     "Something went wrong. Please try again later."
                 };
 
-                await context.Response.WriteAsync(
-                    JsonSerializer.Serialize(response));
+                await context.Response.WriteAsync(JsonSerializer.Serialize(response));
             }
         }
     }

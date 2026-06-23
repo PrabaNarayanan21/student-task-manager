@@ -15,7 +15,7 @@ namespace StudentTM.API.Repositories.Implementation
         }
 
         public async Task<bool> RegisterAsync(User user)
-        {
+        {   
             var connectionString =
                 configuration.GetConnectionString("DefaultConnection");
 

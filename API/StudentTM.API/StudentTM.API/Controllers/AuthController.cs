@@ -13,13 +13,15 @@ namespace StudentTM.API.Controllers
     {
         private readonly IAuthRepository authRepository;
         private readonly ITokenRepository tokenRepository;
+        private readonly ILogger<AuthController> logger;
 
         public AuthController(
             IAuthRepository authRepository,
-            ITokenRepository tokenRepository)
+            ITokenRepository tokenRepository, ILogger<AuthController> logger)
         {
             this.authRepository = authRepository;
             this.tokenRepository = tokenRepository;
+            this.logger = logger;
         } 
 
         // REGISTER
@@ -55,6 +57,8 @@ namespace StudentTM.API.Controllers
                 return BadRequest("Something went wrong.");
             }
 
+            logger.LogInformation("New user registered: {Email}",request.Email);
+
             return Ok(new { message = "User registered successfully." });
 
         }
@@ -70,11 +74,13 @@ namespace StudentTM.API.Controllers
 
             if (user == null)
             {
+                logger.LogInformation("Invalid email or password.");
                 return BadRequest("Invalid email or password.");
+
             }
 
             // Verify password
-            var isPasswordValid =
+            var isPasswordValid = 
                 BCrypt.Net.BCrypt.Verify(
                     request.Password,
                     user.PasswordHash);
@@ -92,6 +98,8 @@ namespace StudentTM.API.Controllers
             {
                 JwtToken = jwtToken
             };
+
+            logger.LogInformation("User {Email} logged in successfully", request.Email);
 
             return Ok(response);
         }

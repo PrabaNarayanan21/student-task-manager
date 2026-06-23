@@ -1,32 +1,127 @@
 <div class="auth-page">
+
   <div class="auth-card">
 
-    <div class="auth-logo">Student<span>TM</span></div>
-    <p class="auth-tagline">Task Management made easy!</p>
+    <div class="auth-logo">
+      Student<span>TM</span>
+    </div>
+
+    <p class="auth-tagline">
+      Task Management made easy!
+    </p>
+
     <h2>Create Account</h2>
-    <p class="auth-subtitle">Join StudentTM today</p>
 
-    <div class="form-group">
-      <label>Username</label>
-      <input type="text" [(ngModel)]="username" name="username" placeholder="Your name" />
-    </div>
+    <p class="auth-subtitle">
+      Join StudentTM today
+    </p>
 
-    <div class="form-group">
-      <label>Email</label>
-      <input type="email" [(ngModel)]="email" name="email" placeholder="you@email.com" />
-    </div>
+    <form
+      [formGroup]="registerForm"
+      (ngSubmit)="onRegister()">
 
-    <div class="form-group">
-      <label>Password</label>
-      <input type="password" [(ngModel)]="password" name="password" placeholder="••••••••" />
-    </div>
+      <!-- Username -->
 
-    <button class="btn-primary" (click)="onRegister()">Register</button>
+      <div class="form-group">
+
+        <label>
+          Username
+        </label>
+
+        <input
+          type="text"
+          formControlName="username"
+          placeholder="Your name" />
+
+        <small
+          class="error"
+          *ngIf="
+            registerForm.get('username')?.touched &&
+            registerForm.get('username')?.invalid
+          ">
+
+          Username must be at least 3 characters
+        </small>
+
+      </div>
+
+      <!-- Email -->
+
+      <div class="form-group">
+
+        <label>
+          Email
+        </label>
+
+        <input
+          type="email"
+          formControlName="email"
+          placeholder="you@email.com" />
+
+        <small
+          class="error"
+          *ngIf="
+            registerForm.get('email')?.touched &&
+            registerForm.get('email')?.invalid
+          ">
+
+          Enter a valid email address
+        </small>
+
+      </div>
+
+      <!-- Password -->
+
+      <div class="form-group">
+
+        <label>
+          Password
+        </label>
+
+        <input
+          type="password"
+          formControlName="password"
+          placeholder="••••••••" />
+
+        <small
+          class="error"
+          *ngIf="
+            registerForm.get('password')?.touched &&
+            registerForm.get('password')?.invalid
+          ">
+
+          Password must be at least 6 characters
+        </small>
+
+      </div>
+
+      <!-- Button -->
+
+      <button
+        type="submit"
+        class="btn-primary"
+        [disabled]="isLoading">
+
+        {{
+          isLoading
+            ? 'Registering...'
+            : 'Register'
+        }}
+
+      </button>
+
+    </form>
 
     <p class="auth-link">
+
       Already have an account?
-      <a routerLink="/login">Sign in</a>
+
+      <a routerLink="/login">
+        Sign in
+      </a>
+
     </p>
 
   </div>
+
 </div>

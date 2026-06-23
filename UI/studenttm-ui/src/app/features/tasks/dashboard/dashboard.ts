@@ -98,7 +98,7 @@ export class Dashboard implements OnInit, OnDestroy {
         this.allTasks = this.allTasks.filter(t => t.id !== this.taskToDelete);
         this.calculateProductivity();
         this.toastr.success('Task deleted successfully');
-        this.cdr.detectChanges();
+        this.cdr.detectChanges(); 
       },
       error: () => {
         this.toastr.error('Failed to delete task');
@@ -124,6 +124,11 @@ export class Dashboard implements OnInit, OnDestroy {
           task.status = updatedTask.status;
           this.calculateProductivity();
           this.cdr.detectChanges();
+          this.toastr.success(
+        task.status === 2
+          ? 'Task marked as completed!'
+          : 'Task marked as pending!'
+      );
         }),
         catchError((error) => {
           console.error('Error updating task:', error);

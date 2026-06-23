@@ -1,7 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, tap, BehaviorSubject } from 'rxjs';
-
 import { environment } from '../../../environments/environment';
 import { LoginRequest } from '../models/login-request.model';
 import { LoginResponse } from '../models/login-response.model';
@@ -13,13 +12,13 @@ import { RegisterRequest } from '../models/register-request.model';
 export class AuthService {
 
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(
-    !!localStorage.getItem('token')
+    !!localStorage.getItem('token') 
   );
   isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {} //constructor injects HttpClient for making API calls
 
-  register(request: RegisterRequest): Observable<any> {
+  register(request : RegisterRequest): Observable<any> {
     return this.http.post(
       `${environment.apiBaseUrl}/Auth/Register`,
       request
@@ -37,7 +36,7 @@ export class AuthService {
           this.isAuthenticatedSubject.next(true);
         }
       })
-    );
+    ); 
   }
 
   logout(): void {

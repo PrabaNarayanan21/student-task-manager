@@ -1,188 +1,229 @@
 <div class="task-form-container">
 
-  <h2>
-    {{
-      isEditMode
-        ? 'Edit Task'
-        : 'Create New Task'
-    }}
-  </h2>
+  <form [formGroup]="taskForm" (ngSubmit)="onSubmit()">
 
-  <p class="form-subtitle">
+    <h2>
+      {{ isEditMode ? 'Edit Task' : 'Create New Task' }}
+    </h2>
 
-    {{
-      isEditMode
-        ? 'Update your task details'
-        : 'Fill in the details below to add a new task'
-    }}
-
-  </p>
-
-
-  <div
-    *ngIf="errorMessage"
-    class="error-message">
-
-    {{ errorMessage }}
-
-  </div>
-
-
-  <div class="form-group">
-
-    <label for="title">
-
-      Title
-      <span class="required">*</span>
-
-    </label>
-
-    <input
-      id="title"
-      type="text"
-      [(ngModel)]="title"
-      placeholder="Enter task title"
-    />
-
-  </div>
-
-
-  <div class="form-group">
-
-    <label for="description">
-      Description / Notes
-    </label>
-
-    <textarea
-      id="description"
-      [(ngModel)]="description"
-      placeholder="Enter task description"
-      rows="4">
-
-    </textarea>
-
-  </div>
-
-  <div class="form-group">
-  <label for="category">
-    Category
-    <span class="optional-label">(optional)</span>
-  </label>
-  <select id="category" [(ngModel)]="category">
-    <option value="">Select a category</option>
-    <option *ngFor="let cat of categoryOptions" [value]="cat">
-      {{ cat }}
-    </option>
-  </select>
-</div>
-
-
-  <div class="form-group">
-  <label for="dueDate">Due Date <span class="required">*</span></label>
-  <input
-    id="dueDate"
-    type="date"
-    [(ngModel)]="dueDate"
-    [class.is-invalid]="errorMessage && !dueDate"
-  />
-</div>
-
-<div class="form-group">
-  <label for="taskTime">
-    Pick Time
-    <span class="optional-label">(optional)</span>
-  </label>
-  <input
-    id="taskTime"
-    type="time"
-    [(ngModel)]="taskTime"
-  />
-  <small class="form-text">Set a specific time for this task</small>
-</div>
-
-  <div class="form-row">
-
-
-    <div class="form-group">
-
-      <label for="priority">
-        Priority
-      </label>
-
-      <select
-        id="priority"
-        [(ngModel)]="priority">
-
-        <option
-          *ngFor="let opt of priorityOptions"
-          [value]="opt.value">
-
-          {{ opt.label }}
-
-        </option>
-
-      </select>
-
-    </div>
-
-
-    <div class="form-group">
-
-      <label for="status">
-        Status
-      </label>
-
-      <select
-        id="status"
-        [(ngModel)]="status">
-
-        <option
-          *ngFor="let opt of statusOptions"
-          [value]="opt.value">
-
-          {{ opt.label }}
-
-        </option>
-
-      </select>
-
-    </div>
-
-  </div>
-
-
-  <div class="form-actions">
-
-    <button
-      class="btn-submit"
-      (click)="onSubmit()"
-      [disabled]="isSubmitting">
-
+    <p class="form-subtitle">
       {{
-        isSubmitting
-          ? (
-              isEditMode
-                ? 'Updating...'
-                : 'Creating...'
-            )
-          : (
-              isEditMode
-                ? 'Update Task'
-                : 'Create Task'
-            )
+        isEditMode
+          ? 'Update your task details'
+          : 'Fill in the details below to add a new task'
       }}
+    </p>
 
-    </button>
+    <!-- TITLE -->
 
-    <button
-      type="button"
-      class="btn-cancel"
-      [routerLink]="['/dashboard']">
+    <div class="form-group">
 
-      Cancel
+      <label>
+        Title
+        <span class="required">*</span>
+      </label>
 
-    </button>
+      <input
+        type="text"
+        formControlName="title"
+        placeholder="Enter task title"
+      />
 
-  </div>
+      <small
+        class="error-text"
+        *ngIf="
+          taskForm.get('title')?.touched &&
+          taskForm.get('title')?.errors?.['required']
+        ">
+        Title is required
+      </small>
+
+      <small
+        class="error-text"
+        *ngIf="
+          taskForm.get('title')?.touched &&
+          taskForm.get('title')?.errors?.['maxlength']
+        ">
+        Maximum 100 characters allowed
+      </small>
+
+    </div>
+
+    <!-- DESCRIPTION -->
+
+    <div class="form-group">
+
+      <label>Description / Notes</label>
+
+      <textarea
+        rows="4"
+        formControlName="description"
+        placeholder="Enter task description">
+      </textarea>
+
+    </div>
+
+    <!-- CATEGORY -->
+
+    <div class="form-group">
+
+      <label>
+        Category
+        <span class="optional-label">(optional)</span>
+      </label>
+
+      <select formControlName="category">
+
+        <option value="">
+          Select a category
+        </option>
+
+        <option
+          *ngFor="let cat of categoryOptions"
+          [value]="cat">
+
+          {{ cat }}
+
+        </option>
+
+      </select>
+
+    </div>
+
+    <!-- DUE DATE -->
+
+    <div class="form-group">
+
+      <label>
+        Due Date
+        <span class="required">*</span>
+      </label>
+
+      <input
+        type="date"
+        formControlName="dueDate"
+        [min]="today"
+      />
+
+      <small
+        class="error-text"
+        *ngIf="
+          taskForm.get('dueDate')?.touched &&
+          taskForm.get('dueDate')?.errors?.['required'] 
+
+        ">
+        Due Date is required
+      </small>
+      <div
+          class="validation-error"
+          *ngIf="
+            taskForm.get('dueDate')?.hasError('pastDate')
+            &&
+            taskForm.get('dueDate')?.touched
+          ">
+          Pls go forward in life! Choose a future date.
+        </div>
+
+    </div>
+
+    <!-- TIME -->
+
+    <div class="form-group">
+
+      <label>
+        Pick Time
+        <span class="optional-label">(optional)</span>
+      </label>
+
+      <input
+        type="time"
+        formControlName="dueTime"
+      />
+
+      <small class="form-text">
+        Set a specific time for this task
+      </small>
+
+    </div>
+
+    <!-- PRIORITY + STATUS -->
+
+    <div class="form-row">
+
+      <div class="form-group">
+
+        <label>Priority</label>
+
+        <select formControlName="priority">
+
+          <option
+            *ngFor="let opt of priorityOptions"
+            [value]="opt.value">
+
+            {{ opt.label }}
+
+          </option>
+
+        </select>
+
+      </div>
+
+      <div class="form-group">
+
+        <label>Status</label>
+
+        <select formControlName="status">
+
+          <option
+            *ngFor="let opt of statusOptions"
+            [value]="opt.value">
+
+            {{ opt.label }}
+
+          </option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+    <!-- BUTTONS -->
+
+    <div class="form-actions">
+
+      <button
+        type="submit"
+        class="btn-submit"
+        [disabled]="isSubmitting">
+
+        {{
+          isSubmitting
+            ? (
+                isEditMode
+                  ? 'Updating...'
+                  : 'Creating...'
+              )
+            : (
+                isEditMode
+                  ? 'Update Task'
+                  : 'Create Task'
+              )
+        }}
+
+      </button>
+
+      <button
+        type="button"
+        class="btn-cancel"
+        [routerLink]="['/dashboard']">
+
+        Cancel
+
+      </button>
+
+    </div>
+
+  </form>
 
 </div>

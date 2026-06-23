@@ -122,3 +122,11 @@ body {
 }
 
 .auth-link a:hover { text-decoration: underline; }
+
+.error {
+  display: block;
+  margin-top: 6px;
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 500;
+}
